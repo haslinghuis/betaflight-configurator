@@ -1016,19 +1016,16 @@ TABS.pid_tuning.initialize = function (callback) {
             FC.ADVANCED_TUNING.vbat_sag_compensation = $('input[id="vbatSagCompensation"]').is(':checked') ? parseInt($('input[name="vbatSagValue"]').val()) : 0;
             FC.ADVANCED_TUNING.thrustLinearization = $('input[id="thrustLinearization"]').is(':checked') ? parseInt($('input[name="thrustLinearValue"]').val()) : 0;
             FC.FILTER_CONFIG.dyn_notch_count = parseInt($('.pid_filter input[name="dynamicNotchCount"]').val());
-        }
 
-        if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
             FC.TUNING_SLIDERS.slider_pids_mode = parseInt($('#sliderPidsModeSelect').val());
             //rounds slider values to nearies multiple of 5 and passes to the FW. Avoid dividing calc by (* x 100)/5 = 20
-            FC.TUNING_SLIDERS.slider_master_multiplier = Math.round(TuningSliders.sliderMasterMultiplier * 20) * 5;
-            FC.TUNING_SLIDERS.slider_roll_pitch_ratio = Math.round(TuningSliders.sliderRollPitchRatio * 20) * 5;
-            FC.TUNING_SLIDERS.slider_i_gain = Math.round(TuningSliders.sliderIGain * 20) * 5;
-            FC.TUNING_SLIDERS.slider_pd_ratio = Math.round(TuningSliders.sliderPDRatio * 20) * 5;
-            FC.TUNING_SLIDERS.slider_pd_gain = Math.round(TuningSliders.sliderPDGain * 20) * 5;
-            FC.TUNING_SLIDERS.slider_dmin_ratio = Math.round(TuningSliders.sliderDMinRatio * 20) * 5;
+            FC.TUNING_SLIDERS.slider_d_gain = Math.round(TuningSliders.sliderDGain * 20) * 5;
+            FC.TUNING_SLIDERS.slider_pi_gain = Math.round(TuningSliders.sliderPIGain * 20) * 5;
             FC.TUNING_SLIDERS.slider_feedforward_gain = Math.round(TuningSliders.sliderFeedforwardGain * 20) * 5;
-
+            FC.TUNING_SLIDERS.slider_i_gain = Math.round(TuningSliders.sliderIGain * 20) * 5;
+            FC.TUNING_SLIDERS.slider_dmin_ratio = Math.round(TuningSliders.sliderDMinRatio * 20) * 5;
+            FC.TUNING_SLIDERS.slider_roll_pitch_ratio = Math.round(TuningSliders.sliderRollPitchRatio * 20) * 5;
+            FC.TUNING_SLIDERS.slider_pitch_pi_gain = Math.round(TuningSliders.sliderPitchPIGain * 20) * 5;
             FC.TUNING_SLIDERS.slider_dterm_filter = TuningSliders.sliderDTermFilter ? 1 : 0;
             FC.TUNING_SLIDERS.slider_dterm_filter_multiplier = Math.round(TuningSliders.sliderDTermFilterMultiplier * 20) * 5;
 
@@ -1772,12 +1769,14 @@ TABS.pid_tuning.initialize = function (callback) {
             const selectRateProfile = $('.selectRateProfile');
 
             $.each(selectProfileValues, function(key, value) {
-                if (key != FC.CONFIG.profile)
+                if (key !== FC.CONFIG.profile) {
                     selectProfile.append(new Option(value, key));
+                }
             });
             $.each(selectRateProfileValues, function(key, value) {
-                if (key != FC.CONFIG.rateProfile)
+                if (key !== FC.CONFIG.rateProfile) {
                     selectRateProfile.append(new Option(value, key));
+                }
             });
 
             $('.copyprofilebtn').click(function() {
@@ -1876,14 +1875,15 @@ TABS.pid_tuning.initialize = function (callback) {
             }
 
             let allPidTuningSliders;
-            if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                allPidTuningSliders = $('#sliderMasterMultiplier, #sliderPDRatio, #sliderPDGain, #sliderFeedforwardGain');
-                $('.tab-pid_tuning .advancedSlider').hide();
-                $('.tab-pid_tuning .sliderMode').hide();
+            if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                allPidTuningSliders = $('#sliderDGain, #sliderPIGain, #sliderFeedforwardGain, #sliderIGain, #sliderDMinRatio, #sliderRollPitchRatio, #sliderPitchPIGain');
+                $('.tab-pid-tuning .legacySlider').hide();
+                $('.tab-pid_tuning .masterSlider').hide();
             } else {
-                allPidTuningSliders = $('#sliderMasterMultiplier, #sliderRollPitchRatio, #sliderIGain, #sliderPDRatio, #sliderPDGain, #sliderDMinRatio, #sliderFeedforwardGain');
-                $('.tab-pid-tuning .baseSlider').show();
-                $('.tab-pid-tuning .MasterSlider').show();
+                allPidTuningSliders = $('#sliderMasterMultiplier, #sliderPDRatio, #sliderPDGain, #sliderFeedforwardGainLegacy');
+                $('.tab-pid_tuning .advancedSlider').hide();
+                $('.tab-pid-tuning .baseSlider').hide();
+                $('.tab-pid_tuning .sliderMode').hide();
             }
 
             allPidTuningSliders.on('input', function() {
@@ -1902,20 +1902,33 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
                 const scaledValue = TuningSliders.scaleSliderValue(slider.val());
-                if (slider.is('#sliderMasterMultiplier')) {
-                    TuningSliders.sliderMasterMultiplier = scaledValue;
-                } else if (slider.is('#sliderRollPitchRatio')) {
-                    TuningSliders.sliderRollPitchRatio = scaledValue;
-                } else if (slider.is('#sliderIGain')) {
-                    TuningSliders.sliderIGain = scaledValue;
-                } else if (slider.is('#sliderPDRatio')) {
-                    TuningSliders.sliderPDRatio = scaledValue;
-                } else if (slider.is('#sliderPDGain')) {
-                    TuningSliders.sliderPDGain = scaledValue;
-                } else if (slider.is('#sliderDMinRatio')) {
-                    TuningSliders.sliderDMinRatio = scaledValue;
-                } else if (slider.is('#sliderFeedforwardGain')) {
-                    TuningSliders.sliderFeedforwardGain = scaledValue;
+
+                if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    if (slider.is('#sliderRollPitchRatio')) {
+                        TuningSliders.sliderRollPitchRatio = scaledValue;
+                    } else if (slider.is('#sliderIGain')) {
+                        TuningSliders.sliderIGain = scaledValue;
+                    } else if (slider.is('#sliderDGain')) {
+                        TuningSliders.sliderDGain = scaledValue;
+                    } else if (slider.is('#sliderPIGain')) {
+                        TuningSliders.sliderPIGain = scaledValue;
+                    } else if (slider.is('#sliderDMinRatio')) {
+                        TuningSliders.sliderDMinRatio = scaledValue;
+                    } else if (slider.is('#sliderFeedforwardGain')) {
+                        TuningSliders.sliderFeedforwardGain = scaledValue;
+                    } else if (slider.is('#sliderPitchPIGain')) {
+                        TuningSliders.sliderPitchPIGain = scaledValue;
+                    }
+                } else {
+                    if (slider.is('#sliderMasterMultiplier')) {
+                        TuningSliders.sliderMasterMultiplier = scaledValue;
+                    } else if (slider.is('#sliderPDRatio')) {
+                        TuningSliders.sliderPDRatio = scaledValue;
+                    } else if (slider.is('#sliderPDGain')) {
+                        TuningSliders.sliderPDGain = scaledValue;
+                    } else if (slider.is('#sliderFeedforwardGainLegacy')) {
+                        TuningSliders.sliderFeedforwardGainLegacy = scaledValue;
+                    }
                 }
                 TuningSliders.calculateNewPids();
                 self.analyticsChanges['PidTuningSliders'] = "On";
@@ -1931,21 +1944,34 @@ TABS.pid_tuning.initialize = function (callback) {
             allPidTuningSliders.dblclick(function() {
                 const slider = $(this);
                 slider.val(1);
-                if (slider.is('#sliderMasterMultiplier')) {
-                    TuningSliders.sliderMasterMultiplier = 1;
-                } else if (slider.is('#sliderRollPitchRatio')) {
-                    TuningSliders.sliderRollPitchRatio = 1;
-                } else if (slider.is('#sliderIGain')) {
-                    TuningSliders.sliderIGain = 1;
-                } else if (slider.is('#sliderPDRatio')) {
-                    TuningSliders.sliderPDRatio = 1;
-                } else if (slider.is('#sliderPDGain')) {
-                    TuningSliders.sliderPDGain = 1;
-                } else if (slider.is('#sliderDMinRatio')) {
-                    TuningSliders.sliderDMinRatio = 1;
-                } else if (slider.is('#sliderFeedforwardGain')) {
-                    TuningSliders.sliderFeedforwardGain = 1;
+                if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    if (slider.is('#sliderRollPitchRatio')) {
+                        TuningSliders.sliderRollPitchRatio = 1;
+                    } else if (slider.is('#sliderIGain')) {
+                        TuningSliders.sliderIGain = 1;
+                    } else if (slider.is('#sliderDGain')) {
+                        TuningSliders.sliderDGain = 1;
+                    } else if (slider.is('#sliderPIGain')) {
+                        TuningSliders.sliderPIGain = 1;
+                    } else if (slider.is('#sliderDMinRatio')) {
+                        TuningSliders.sliderDMinRatio = 1;
+                    } else if (slider.is('#sliderFeedforwardGain')) {
+                        TuningSliders.sliderFeedforwardGain = 1;
+                    } else if (slider.is('#sliderPitchPIGain')) {
+                        TuningSliders.sliderPitchPIGain = 1;
+                    }
+                } else {
+                    if (slider.is('#sliderMasterMultiplier')) {
+                        TuningSliders.sliderMasterMultiplier = 1;
+                    } else if (slider.is('#sliderPDRatio')) {
+                        TuningSliders.sliderPDRatio = 1;
+                    } else if (slider.is('#sliderPDGain')) {
+                        TuningSliders.sliderPDGain = 1;
+                    } else if (slider.is('#sliderFeedforwardGainLegacy')) {
+                        TuningSliders.sliderFeedforwardGainLegacy = 1;
+                    }
                 }
+
                 TuningSliders.calculateNewPids();
                 TuningSliders.updatePidSlidersDisplay();
             });
@@ -2174,7 +2200,7 @@ TABS.pid_tuning.renderModel = function () {
             this.currentRates.rc_expo,
             this.currentRates.superexpo,
             this.currentRates.deadband,
-            this.currentRates.roll_rate_limit
+            this.currentRates.roll_rate_limit,
         );
         const pitch = delta * this.rateCurve.rcCommandRawToDegreesPerSecond(
             FC.RC.channels[1],
@@ -2183,7 +2209,7 @@ TABS.pid_tuning.renderModel = function () {
             this.currentRates.rc_pitch_expo,
             this.currentRates.superexpo,
             this.currentRates.deadband,
-            this.currentRates.pitch_rate_limit
+            this.currentRates.pitch_rate_limit,
         );
         const yaw = delta * this.rateCurve.rcCommandRawToDegreesPerSecond(
             FC.RC.channels[2],
@@ -2192,7 +2218,7 @@ TABS.pid_tuning.renderModel = function () {
             this.currentRates.rc_yaw_expo,
             this.currentRates.superexpo,
             this.currentRates.yawDeadband,
-            this.currentRates.yaw_rate_limit
+            this.currentRates.yaw_rate_limit,
         );
 
         this.model.rotateBy(-degToRad(pitch), -degToRad(yaw), -degToRad(roll));
@@ -2502,9 +2528,9 @@ TABS.pid_tuning.updateRatesLabels = function() {
             balloonsDirty = []; // reset the dirty balloon draw area (for overlap detection)
             // create an array of balloons to draw
             const balloons = [
-                {value: parseInt(maxAngularVelRoll), balloon: function() {drawBalloonLabel(stickContext, maxAngularVelRoll,  curveWidth, rateScale * (maxAngularVel - parseInt(maxAngularVelRoll)),  'right', BALLOON_COLORS.roll, balloonsDirty);}},
+                {value: parseInt(maxAngularVelRoll), balloon: function() {drawBalloonLabel(stickContext, maxAngularVelRoll, curveWidth, rateScale * (maxAngularVel - parseInt(maxAngularVelRoll)), 'right', BALLOON_COLORS.roll, balloonsDirty);}},
                 {value: parseInt(maxAngularVelPitch), balloon: function() {drawBalloonLabel(stickContext, maxAngularVelPitch, curveWidth, rateScale * (maxAngularVel - parseInt(maxAngularVelPitch)), 'right', BALLOON_COLORS.pitch, balloonsDirty);}},
-                {value: parseInt(maxAngularVelYaw), balloon: function() {drawBalloonLabel(stickContext, maxAngularVelYaw,   curveWidth, rateScale * (maxAngularVel - parseInt(maxAngularVelYaw)),   'right', BALLOON_COLORS.yaw, balloonsDirty);}}
+                {value: parseInt(maxAngularVelYaw), balloon: function() {drawBalloonLabel(stickContext, maxAngularVelYaw, curveWidth, rateScale * (maxAngularVel - parseInt(maxAngularVelYaw)), 'right', BALLOON_COLORS.yaw, balloonsDirty);}},
             ];
             // show warning message if any axis angular velocity exceeds 1800d/s
             const MAX_RATE_WARNING = 1800;
@@ -2520,7 +2546,7 @@ TABS.pid_tuning.updateRatesLabels = function() {
                 balloons.push(
                     {value: parseInt(currentValues[0]), balloon: function() {drawBalloonLabel(stickContext, currentValues[0], 10, 150, 'none', BALLOON_COLORS.roll, balloonsDirty);}},
                     {value: parseInt(currentValues[1]), balloon: function() {drawBalloonLabel(stickContext, currentValues[1], 10, 250, 'none', BALLOON_COLORS.pitch, balloonsDirty);}},
-                    {value: parseInt(currentValues[2]), balloon: function() {drawBalloonLabel(stickContext, currentValues[2], 10, 350,  'none', BALLOON_COLORS.yaw, balloonsDirty);}}
+                    {value: parseInt(currentValues[2]), balloon: function() {drawBalloonLabel(stickContext, currentValues[2], 10, 350, 'none', BALLOON_COLORS.yaw, balloonsDirty);}},
                 );
             }
             // then display them on the chart

@@ -3642,57 +3642,91 @@
         "message": "Master Multiplier:",
         "description": "Master tuning slider label"
     },
-    "pidTuningRollPitchRatioSlider": {
-        "message": "Pitch-Roll Ratio:",
-        "description": "Pitch-Roll Ratio slider label"
-    },
-    "pidTuningRollPitchRatioSliderHelp": {
-        "message": "The Pitch-Roll Ratio is the balance of Moment of Inertia (MoI) between the Pitch and Roll axis.<br /><br />Generally, the Pitch axis has a higher MoI and therefore it may be appropriate to have PID gains higher on the Pitch axis vs the Roll axis.  However, on 'Stretched X', or other configurations, this may not be the case.<br /><br />Generally for tuning, you are moving up the 'P and D Gain' slider until one axis begins to show D-term oscillation (a 'trilling' noise) and then back it down some.  Blackbox is the easies method to determine which axis is 'trilling'.  Once you find which axis is at the D-term limit, you can use the Pitch-Roll Gain slider to bring the other axis to just short of the same limit to balance out the quad for peak flight performance.",
-        "description": "Pitch-Roll Ratio tuning slider helpicon message"
-    },
-    "pidTuningIGainSlider": {
-        "message": "I-term Gain:",
-        "description": "I-term slider label"
-    },
-    "pidTuningIGainSliderHelp": {
-        "message": "I-term needs to be in balance with the P-term; similar to how the P-term needs to be in balance with the D-term (Tuning sequence: Filters -> D-term -> P-term -> I-term).<br /><br />The I-term Gain sliders adjust I-term gains while holding P-term gains constant to adjust the ratio between the two terms.<br /><br />If you are getting slow wobbles when you drop to 0% throttle, that is an idication the I-term gains is too high and you should lower the I-term Gain slider <b>OR</b> raise the P and D Gain slider if you have not tuned D-term and PD Balance yet (which you should first before loweing I-Term).<br /><br />This said, genereally you want the I-term gains as strong as they can be (but within balance) to keep the quad tracking on the sticks in spirrel turns, orbits, ect...",
-        "description": "I-gain Gain tuning slider helpicon message"
+    "pidTuningMasterSliderHelp": {
+        "message": "Increase your overall tune to decrease prop wash. If you get trilling oscillations or hot motors, decrease.<br /></br />Quads with lower power to Moment of Inertia (MoI) need a higher ‘Overall Tune’ because they move slower. Quads with HIGHER power to MoI need a lower ‘Overall Tune’ (ie: 6S racing quads).",
+        "description": "Master Gain tuning slider helpicon message"
     },
     "pidTuningPDRatioSlider": {
         "message": "PD Balance:",
         "description": "PD balance tuning slider label"
     },
-    "pidTuningPDGainSlider": {
-        "message": "P and D Gain:",
-        "description": "P and D Gain tuning slider label"
-    },
-    "pidTuningDMinRatioSlider": {
-        "message": "D_min Gain drop:",
-        "description": "D Min slider label"
-    },
-    "pidTuningDMinRatioSliderHelp": {
-        "message": "Controls how much D-gains are suppressed in normal forward flight.  Lower the slider to drop the D-gains MORE in normal forward flight.  Raise the slider to drop D-gains LESS in normal forward flight.<br /><br />With D_min enabled, the Active D-gain changes during flight. In normal forward flight (with D_min enabled) the Active D-gain hovers just above the D_min Gain values. During sharp stick moves or prop-wash, the Active D-gain raises to the D_max gains.  See the D_min / D_max tips above for more detials.<br /><br />Lower D-gains can help smooth out forward flight, negating the need to increase filtering on the Gyro and/or D-term in the Filters Setting tab; while it boost the Active D-gains to the D_max values when more D-term is needed to control overshooting and/or to stabiliize the quad in prop-wash conditions or to resist outside forces (wind).",
-        "description": "D_min slider helpicon message"
-    },
-    "pidTuningResponseSlider": {
-        "message": "Stick Response Gain:",
-        "description": "Response tuning slider label"
-    },
-    "pidTuningMasterSliderHelp": {
-        "message": "Generally larger quads need higher PID gains due to having a lower power to Moment of Inertia (MoI) ratio.<br /><br />Smaller quads (micros) generally need lower PID gains due to a higher power to MoI ratio.<br /><br />Higher values are for lower authority quads. Lower values are for higher authority quads.",
-        "description": "Master Gain tuning slider helpicon message"
-    },
     "pidTuningPDRatioSliderHelp":{
         "message": "Relatively high D-term will dampen stick responsiveness and may make motors hot, but should help control P-term oscillations and will improve prop-wash oscillation.<br /><br />Relatively low D-term gives quicker stick responsiveness, but will weaken prop-wash performance and reacting to external forces (wind).",
         "description": "PD balance tuning slider helpicon message"
+    },
+
+    "pidTuningPDGainSlider": {
+        "message": "P and D Gain:",
+        "description": "P and D Gain tuning slider label"
     },
     "pidTuningPDGainSliderHelp":{
         "message": "Lower P and D Gain will result in cooler motors but also in more prop-wash oscillation. Too low value may cause the quad to be unstable.<br /><br />P and D terms work together to reduce prop-wash.<br /><br />Higher values will increase motor heat and could increase oscillations during smooth forward flight due to higher D term gains.",
         "description": "P and D gain tuning slider helpicon message"
     },
-    "pidTuningResponseSliderHelp":{
+    "pidTuningResponseSliderLegacy": {
+        "message": "Stick Response Gain:",
+        "description": "Response tuning slider label"
+    },
+    "pidTuningResponseSliderLegacyHelp": {
         "message": "Lower FF values will worsen the stick response and may result in slow bounceback at the end of a flip or roll due to the quad lagging the sticks too much and I-term winding up and cousing 'I-term Bounceback'.<br /><br />Higher FF values will give snappier stick responses in sharp moves. Excessively high FF values can cause overshoots and fast bounceback at the end of a flip or roll.<br /><br />Note:<br />The feature I-term Relax can stop the I-term from winding up on stick move for a low authority quads or if low Stick Response Gains are used.",
         "description": "Stick response gain tuning slider helpicon message"
+    },
+
+    "pidTuningDGainSlider": {
+        "message": "Damping:<br /><i><small>D Gains</small></i>",
+        "description": "D Gain (Damping) tuning slider label"
+    },
+    "pidTuningDGainSliderHelp": {
+        "message": "Relatively high D-gain will dampen stick responsiveness and may make motors hot, but should help control fast oscillations and willimprove prop-wash.<br /><br />Relatively low D-term gives quicker stick responsiveness, but will weaken prop-wash performance and reacting to external forces (wind).",
+        "description": "D gain balance tuning slider helpicon message"
+    },
+    "pidTuningPIGainSlider": {
+        "message": "Tracking:<br /><i><small>P & I Gains</small></i>",
+        "description": "P and I Gain (Stability) tuning slider label"
+    },
+    "pidTuningPIGainSliderHelp": {
+        "message": "Increase the Tracking slider to sharpen the quads response to your commands and also outside influences; avoiding the nose of the quad going off course in any condition.<br /><br />Lower ‘Tracking’ values will have lots of bobbles and will go off course on stick moves and in prop wash. High ‘Tracking’ may result in oscillation and fast bounceback (hard to see, but you canhear). Excessive Tracking may result in oscillations and hot motors.",
+        "description": "P and I gain tuning slider helpicon message"
+    },
+    "pidTuningResponseSlider": {
+        "message": "Stick Response:<br /><i><small>FF Gains</small></i>",
+        "description": "Response tuning slider label"
+    },
+    "pidTuningResponseSliderHelp": {
+        "message": "Lower Stick Response will increase the latency of the quad movements to commands and may result in slow bounceback at the end of a flip or roll. Higher Stick Response will give snappier quad response to sharp stick moves. Excessively high Stick Response can cause overshoots and fast bounceback at the end of a flip or roll.<br /><br /><strong>Note:</strong><br />The feature “I-term Relax” can stop bounceback for low authority quads or if low Stick Response Gains are used.",
+        "description": "Stick response gain tuning slider helpicon message"
+    },
+    "pidTuningIGainSlider": {
+        "message": "Drift - Wobble:<br /><i><small>I Gains</small></i>",
+        "description": "I-term slider label"
+    },
+    "pidTuningIGainSliderHelp": {
+        "message": "Increase if you want tighter tracking in spiral turns, orbits, or 0% throttle commands.  Conversely, if you are experiencing slow wobbles or bounceback after flips/rolls or chopping the throttle to 0% decrease.<br /><br />Generally you want the ‘Drift – Wobble’ slider to be as high as it can be to keep the quad tracking in spiral turns, orbits, ect... but not so high that you start to see wobbles on chopping the throttleto 0%.<br /><br /><strong>Note:</strong><br />If you experience bounceback at any time that is easy to see, make sure the feature “I-term Relax” is enabled.",
+        "description": "I-gain Gain tuning slider helpicon message"
+    },
+    "pidTuningDMinRatioSlider": {
+        "message": "Damping Boost:<br /><i><small>D Max</small></i>",
+        "description": "D Min slider label"
+    },
+    "pidTuningDMinRatioSliderHelp": {
+        "message": "Increase the Damping Boost slider to increase Damping with faster movements or stick inputs. Conversely, decrease to do the opposite.<br /><br />For race quads where the main Damping slider has been set low to minimize motor heat, moving this slider to the right will improve overshoot control for quick direction changes.<br /><br />For HD or cinematic quads, instability in forward flight is best addressed by moving the Damping slider (not Damping Boost) to the right. Always check for motor heat and listen for weird noises during quick inputs when adjusting this slider to the right.<br /><br />For freestyle quads, especially heavier builds, moving this slider to the right may help control overshoot in flips and rolls.<br /><br /><strong>Note:</strong><br />Generally overshoot in flips and rolls is due to not enough 'i-Term Relax', or motor desyncs, or inadequate authority (a.k.a. Motor Saturation). If you find that moving the Damping Boost slider to the right doesn't improve flip or roll overshoot, put it back to the normal position, and seek out the reason for the overshoot or wobble.",
+        "description": "D_min slider helpicon message"
+    },
+    "pidTuningRollPitchRatioSlider": {
+        "message": "Pitch Damping:<br /><i><small>Pitch:Roll D</small></i>",
+        "description": "Pitch-Roll Ratio slider label"
+    },
+    "pidTuningRollPitchRatioSliderHelp": {
+        "message": "Increases Damping (D) on the Pitch axis ONLY, i.e, for Pitch relative to Roll.  Helps control Pitch specific overshooting or bounce-back.<br /><br />Quads with 'heavier' moment of inertia on the Pitch axis generally need more Damping authority (since Pitch has more inertia and accumulates more momentum).<br /><br />Tune the master 'Damping' and/or 'Tracking' sliders first, until you get good Roll axis behavior. Then use the Pitch sliders (increase or decrease) to fine tune the Pitch axis without affecting Roll.",
+        "description": "Pitch-Roll Ratio tuning slider helpicon message"
+    },
+    "pidTuningPitchPIGainSlider": {
+        "message": "Pitch Tracking:<br /><i><small>Pitch:Roll P & I</small></i>",
+        "description": "Pitch P & I slider label"
+    },
+    "pidTuningPitchPIGainSliderHelp": {
+        "message": "Increases the Tracking strength on the Pitch axis ONLY, by changing Pitch P and I values relative to Roll.  Allows stronger tracking authority on the Pitch axis relative to Roll.<br /><br />Increase to stabilise pitch (nose) bobble with sharp pitch inputs or throttle chops. Also consider raising Anti-Gravity gains.<br /><br />Tune the master 'Damping' and/or 'Tracking' sliders first, until you get good Roll axis behaviour. Then use the Pitch sliders (increase or decrease) to fine tune the Pitch axis without affecting Roll.",
+        "description": "Pitch P & I Gain tuning slider helpicon message"
     },
     "pidTuningGyroLowpassFiltersGroup": {
         "message": "Gyro Lowpass Filters"

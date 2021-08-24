@@ -1489,6 +1489,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
 
             case MSPCodes.MSP_TUNING_SLIDERS:
                 FC.TUNING_SLIDERS.slider_pids_mode = data.readU8();
+                FC.TUNING_SLIDERS.slider_master_multiplier = data.readU8();
                 FC.TUNING_SLIDERS.slider_roll_pitch_ratio = data.readU8();
                 FC.TUNING_SLIDERS.slider_i_gain = data.readU8();
                 FC.TUNING_SLIDERS.slider_d_gain = data.readU8();
@@ -2311,6 +2312,7 @@ MspHelper.prototype.crunch = function(code) {
 
         case MSPCodes.MSP_SET_TUNING_SLIDERS:
             buffer.push8(FC.TUNING_SLIDERS.slider_pids_mode)
+                  .push8(FC.TUNING_SLIDERS.slider_master_multiplier)
                   .push8(FC.TUNING_SLIDERS.slider_roll_pitch_ratio)
                   .push8(FC.TUNING_SLIDERS.slider_i_gain)
                   .push8(FC.TUNING_SLIDERS.slider_d_gain)

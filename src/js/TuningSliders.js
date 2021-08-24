@@ -78,7 +78,7 @@ TuningSliders.setExpertMode = function() {
         const dMinShow = parseInt($('.pid_tuning input[name="dMinRoll"]').val()) !== 0;
         $('.tab-pid_tuning .DMinRatioSlider').toggle(this.expertMode && dMinShow);
         $('.tab-pid_tuning .advancedSlider').toggle(this.expertMode);
-        $('.tab-pid_tuning .masterSlider').hide();
+        $('.tab-pid_tuning .masterSlider').toggle(this.expertMode);
         $('.tab-pid_tuning .legacySlider').hide();
     } else {
         $('#slidersPidsBox, #slidersFilterBox').toggleClass('nonExpertModeSliders', !this.expertMode);
@@ -107,6 +107,7 @@ TuningSliders.downscaleSliderValue = function(value) {
 TuningSliders.initPidSlidersPosition = function() {
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         this.sliderPidsMode = FC.TUNING_SLIDERS.slider_pids_mode;
+        this.sliderMasterMultiplier = FC.TUNING_SLIDERS.slider_master_multiplier / 100;
         this.sliderDGain = FC.TUNING_SLIDERS.slider_d_gain / 100;
         this.sliderPIGain = FC.TUNING_SLIDERS.slider_pi_gain / 100;
         this.sliderFeedforwardGain = FC.TUNING_SLIDERS.slider_feedforward_gain / 100;
@@ -115,6 +116,7 @@ TuningSliders.initPidSlidersPosition = function() {
         this.sliderRollPitchRatio = FC.TUNING_SLIDERS.slider_roll_pitch_ratio / 100;
         this.sliderPitchPIGain = FC.TUNING_SLIDERS.slider_pitch_pi_gain / 100;
 
+        $('output[name="sliderMasterMultiplier-number"]').val(this.sliderMasterMultiplier);
         $('output[name="sliderDGain-number"]').val(this.sliderDGain);
         $('output[name="sliderPIGain-number"]').val(this.sliderPIGain);
         $('output[name="sliderFeedforwardGain-number"]').val(this.sliderFeedforwardGain);
@@ -123,6 +125,7 @@ TuningSliders.initPidSlidersPosition = function() {
         $('output[name="sliderRollPitchRatio-number"]').val(this.sliderRollPitchRatio);
         $('output[name="sliderPitchPIGain-number"]').val(this.sliderPitchPIGain);
 
+        $('#sliderMasterMultiplier').val(this.downscaleSliderValue(this.sliderMasterMultiplier));
         $('#sliderDGain').val(this.downscaleSliderValue(this.sliderDGain));
         $('#sliderPIGain').val(this.downscaleSliderValue(this.sliderPIGain));
         $('#sliderFeedforwardGain').val(this.downscaleSliderValue(this.sliderFeedforwardGain));
@@ -183,6 +186,7 @@ TuningSliders.initDTermFilterSliderPosition = function() {
 TuningSliders.resetPidSliders = function() {
     if (!this.cachedPidSliderValues) {
         if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+            this.sliderMasterMultiplier = 1;
             this.sliderDGain = 1;
             this.sliderPIGain = 1;
             this.sliderFeedforwardGain = 1;
@@ -410,6 +414,7 @@ TuningSliders.updateFormPids = function(updateSlidersOnly = false) {
     }
 
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+        $('output[name="sliderMasterMultiplier-number"]').val(this.sliderMasterMultiplier);
         $('output[name="sliderDGain-number"]').val(this.sliderDGain);
         $('output[name="sliderPIGain-number"]').val(this.sliderPIGain);
         $('output[name="sliderIGain-number"]').val(this.sliderIGain);
@@ -490,6 +495,7 @@ TuningSliders.calculateNewPids = function(updateSlidersOnly = false) {
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         FC.TUNING_SLIDERS.slider_pids_mode = parseInt($('#sliderPidsModeSelect').val());
         //rounds slider values to nearies multiple of 5 and passes to the FW. Avoid dividing calc by (* x 100)/5 = 20
+        FC.TUNING_SLIDERS.slider_master_multiplier = Math.round(this.sliderMasterMultiplier * 20) * 5;
         FC.TUNING_SLIDERS.slider_d_gain = Math.round(this.sliderDGain * 20) * 5;
         FC.TUNING_SLIDERS.slider_pi_gain = Math.round(this.sliderPIGain * 20) * 5;
         FC.TUNING_SLIDERS.slider_feedforward_gain = Math.round(this.sliderFeedforwardGain * 20) * 5;

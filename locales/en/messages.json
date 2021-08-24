@@ -1645,27 +1645,31 @@
         "message": "Anti Gravity boosts the I term when fast throttle changes are detected. Higher gain values provide stability and better attitude hold when you pump the throttle."
     },
     "pidTuningDMin": {
-        "message": "D Min",
+        "message": "Derivative",
         "description": "Table header of the D Min feature in the PIDs tab"
     },
     "pidTuningDMinDisabledNote": {
         "message": "<strong>Note:</strong> D Min feature is disabled and its parameters are hidden. To use D Min please enable it in $t(pidTuningPidSettings.message)."
     },
+    "pidTuningDMinFeatureTitle": {
+       "message": "Dynamic Damping",
+       "description": "Title for the options panel for the D Max feature"
+    },
     "pidTuningDMinGain": {
        "message": "Gain",
-       "description": "Gain of the D Min feature"
+       "description": "Gain of the D Max feature"
     },
     "pidTuningDMinAdvance": {
        "message": "Advance",
-       "description": "Advance of the D Min feature"
+       "description": "Advance of the D Max feature"
     },
     "pidTuningDMinFeatureHelp": {
-        "message": "D Min provides a way to have a lower level of D in normal flight and a higher level for quick maneuvers that might cause overshoot, like flips and rolls. It also brings D up during prop-wash. Gain adjusts how fast D gets up to its maximum value and is based on gyro to determine sharp moves and prop-wash events. Advance makes D go up earlier by using setpoint instead of gyro to determine sharp moves.",
-        "description": "D Min feature helpicon message"
+        "message": "The D Max boost algorithm brings D towards the D Max value during fast movements.  It has two smoothed inputs, each with a 0-100 range, and both are additive.  'Advance' increases D towards D Max during stick movements, slightly ahead of 'Gain', which increases D towards D Max when the quad turns, or is shaking in propwash.  Only 'Gain' lifts D with shaking or propwash.  Both respond more strongly to faster than slower movement.  Usually, only 'Gain' is needed.  Advance can be added for low authority quads that tend to overshoot heavily.  At default values of 30, D reaches D Max only during very fast movements.  A value of 100 would bring D up to D Max very readily, so that the effective D during almost any movement would be the D Max value.",
+        "description": "D Max feature helpicon message"
     },
     "pidTuningDMinHelp": {
-        "message": "Controls the strength of dampening (D-term) in normal forward flight.<br>With D_min enabled, the Active D-gain changes during flight. In normal forward flight it is at the D_min gains below. During a sharp move or during prop-wash, the Active D-gain raises to the D_max gains specified to the left.<br /><br />Full D_max gains are reached on sharp stick inputs, but only partial are achieved during prop-wash.<br>Adjust the D_Min Gain and Advance to control the gain boost sensitivity and timing.",
-        "description": "D Min helpicon message on PID table titlebar"
+        "message": "Controls the strength of dampening to ANY motion on the craft.  For stick moves, the D-term dampens the command. For an outside influence (prop-wash OR wind gust) the D-term dampens the influence.<br /><br />Higher gains provide more dampening and reduce overshoot by P-term and FF.<br>However, the D-term is VERY sensitive to gyro high frequency vibrations (noise | magnifies by 10x to 100x).<br /><br />High frequency noise can cause motor heat and burn out motors if D-gains are too high or the gyro noise is not filtered well (see Filters tab).<br /><br />Think of the D-term as the shock absorber on your car, but with the negative inherent property of magnifying high frequency gyro noise.",
+        "description": "Derivative helpicon message on PID table titlebar"
     },
     "pidTuningPidSettings": {
         "message": "PID Controller Settings"
@@ -1843,8 +1847,8 @@
         "message": "D Max"
     },
     "pidTuningDerivativeHelp": {
-        "message": "Controls the strength of dampening to ANY motion on the craft.  For stick moves, the D-term dampens the command. For an outside influence (prop-wash OR wind gust) the D-term dampens the influence.<br /><br />Higher gains provide more dampening and reduce overshoot by P-term and FF.<br>However, the D-term is VERY sensitive to gyro high frequency vibrations (noise | magnifies by 10x to 100x).<br /><br />High frequency noise can cause motor heat and burn out motors if D-gains are too high or the gyro noise is not filtered well (see Filters tab).<br /><br />Think of the D-term as the shock absorber on your car, but with the negative inherent property of magnifying high frequency gyro noise.",
-        "description": "Derivative Term helpicon message on PID table titlebar"
+        "message": "D Max provides a higher level of D for quick maneuvers that might otherwise cause overshoot, like flips and rolls. It is particularly useful on noisy builds or low authority machines.  D Max allows the basic D, or Damping, value to be set lower than otherwise might be needed, helping keep motors cooler, and turn-in faster.  D Max also brings D up during prop-wash. D Max Advance and Gain values control the timing and strength of the increase.  HD Freestyle and Cinematic builds  pilots typically run a relatively high Derivative value to achieve stability in forward flight, and don't need so much of an increase from D Max.  Race pilots typically care about keeping motors cool even with bent props, so they run lower basic D values and keep D Max up to control overshoot.",
+        "description": "D Max Term helpicon message on PID table titlebar"
     },
     "pidTuningFeedforward": {
         "message": "Feedforward"
@@ -3607,7 +3611,7 @@
         "description": "D Term filtering tuning slider helpicon message"
     },
     "pidTuningPidSlidersHelp": {
-        "message": "Sliders to adjust the quad flight characteristics (PID gains)<br /><br />Master Multiplier: Raises or Lowers all the PID gains (above) holding the proportional difference between the gains.<br /><br />PD Balance: Adjusts the balance (ratio \\ proportional difference) between the P and D terms ('the spring' [p-term] and 'shock absorber' [d-term]).<br /><br />PD Gain: Raises or Lowers the P&D gains together - holding the ratio (balance) between the two - for more (or less) PID control authority.<br /><br />Stick Response Gain: Raises or Lowers the FeedForward gains to control the stick response feel of the quad.",
+        "message": "Sliders to adjust the quad flight characteristics (PID gains)<br /><br />Damping (D gain): Resists fast movement, minimises P oscillation.<br /><br />Tracking (P and I gain): Enchances the responsiveness of the quad, if too high may cause trilling or oscillation.<br /><br />Stick Response (Feedforward): Increases the responsiveness of the quad to faster stick movements.<br /><br />Drift - Wobble (I gain, expert):  Fine adjustment of I.<br /><br />Dynamic D (D Max, expert):  Sets the maximum amount that D can be boosted to during fast movements.<br /><br />Pitch Damping (Pitch:Roll D ratio, expert): Increases the amount of damping on pitch relative to roll.<br /><br />Pitch Tracking (Pitch:Roll P, I and F ratio, expert): Increases stabilising strenght on pitch relative to roll.<br /><br />Master Multiplier (all gains, expert): Raises or Lowers all the PID gains, keeping their proportions constant.",
         "description": "Overall helpicon message for PID tuning sliders"
     },
     "pidTuningSliderWarning": {
@@ -3643,7 +3647,7 @@
         "description": "Master tuning slider label"
     },
     "pidTuningMasterSliderHelp": {
-        "message": "Increase your overall tune to decrease prop wash. If you get trilling oscillations or hot motors, decrease.<br /></br />Quads with lower power to Moment of Inertia (MoI) need a higher ‘Overall Tune’ because they move slower. Quads with HIGHER power to MoI need a lower ‘Overall Tune’ (ie: 6S racing quads).",
+        "message": "Increases all PID parameters equally.  Don't change this slider unless you run out of adjustment on the other sliders.  Typically this is only needed for low authority or high moment of inertia (MoI) quads like X-Class or cinelifter builds.  Too much master gain may cause trilling oscillations or hot motors.",
         "description": "Master Gain tuning slider helpicon message"
     },
     "pidTuningPDRatioSlider": {
@@ -3651,8 +3655,8 @@
         "description": "PD balance tuning slider label"
     },
     "pidTuningPDRatioSliderHelp":{
-        "message": "Relatively high D-term will dampen stick responsiveness and may make motors hot, but should help control P-term oscillations and will improve prop-wash oscillation.<br /><br />Relatively low D-term gives quicker stick responsiveness, but will weaken prop-wash performance and reacting to external forces (wind).",
-        "description": "PD balance tuning slider helpicon message"
+        "message": "Changes D and D max.  Relatively high D will dampen stick responsiveness and may make motors hot, but should help control P-term oscillations and will improve prop-wash oscillation.<br /><br />Relatively low D-term gives quicker stick responsiveness, but will weaken prop-wash performance and reacting to external forces (wind).",
+        "description": "D_term tuning slider helpicon message"
     },
 
     "pidTuningPDGainSlider": {
@@ -3701,15 +3705,15 @@
         "description": "I-term slider label"
     },
     "pidTuningIGainSliderHelp": {
-        "message": "Increase if you want tighter tracking in spiral turns, orbits, or 0% throttle commands.  Conversely, if you are experiencing slow wobbles or bounceback after flips/rolls or chopping the throttle to 0% decrease.<br /><br />Generally you want the ‘Drift – Wobble’ slider to be as high as it can be to keep the quad tracking in spiral turns, orbits, ect... but not so high that you start to see wobbles on chopping the throttleto 0%.<br /><br /><strong>Note:</strong><br />If you experience bounceback at any time that is easy to see, make sure the feature “I-term Relax” is enabled.",
+        "message": "Increases or decreases I.  Higher I may improve tracking in spiral turns, orbits, or 0% throttle commands.  Too much I, particularly with not enough P, may cause wobbles or bounceback after flips/rolls or on chopping the throttle to 0%.<br /><br />Generally you want the ‘Drift – Wobble’ slider to be as high as it can be to keep the quad tracking in spiral turns, orbits, ect... but not so high that you start to see wobbles on chopping the throttleto 0%.<br /><br /><strong>Note:</strong><br />If you experience bounceback at any time that is easy to see, make sure that “I-term Relax” is enabled, and try lowering the iterm_relax_cutoff value.",
         "description": "I-gain Gain tuning slider helpicon message"
     },
     "pidTuningDMinRatioSlider": {
-        "message": "Damping Boost:<br /><i><small>D Max</small></i>",
+        "message": "Dynamic Damping:<br /><i><small>D Max</small></i>",
         "description": "D Min slider label"
     },
     "pidTuningDMinRatioSliderHelp": {
-        "message": "Increase the Damping Boost slider to increase Damping with faster movements or stick inputs. Conversely, decrease to do the opposite.<br /><br />For race quads where the main Damping slider has been set low to minimize motor heat, moving this slider to the right will improve overshoot control for quick direction changes.<br /><br />For HD or cinematic quads, instability in forward flight is best addressed by moving the Damping slider (not Damping Boost) to the right. Always check for motor heat and listen for weird noises during quick inputs when adjusting this slider to the right.<br /><br />For freestyle quads, especially heavier builds, moving this slider to the right may help control overshoot in flips and rolls.<br /><br /><strong>Note:</strong><br />Generally overshoot in flips and rolls is due to not enough 'i-Term Relax', or motor desyncs, or inadequate authority (a.k.a. Motor Saturation). If you find that moving the Damping Boost slider to the right doesn't improve flip or roll overshoot, put it back to the normal position, and seek out the reason for the overshoot or wobble.",
+        "message": "Increases D max, the maximum amount that D can increase to during faster movements.  <br /><br />For race quads, where the main Damping slider has been set low to minimize motor heat, moving this slider to the right will improve overshoot control for quick direction changes.<br /><br />For HD or cinematic quads, instability in forward flight is best addressed by moving the Damping slider (not the Damping Boost slider) to the right. Always check for motor heat and listen for weird noises during quick inputs when adjusting this slider to the right.<br /><br />For freestyle quads, especially heavier builds, moving this slider to the right may help control overshoot in flips and rolls.<br /><br /><strong>Note:</strong><br />Generally overshoot in flips and rolls is due to not enough 'i-Term Relax', or motor desyncs, or inadequate authority (a.k.a. Motor Saturation). If you find that moving the Damping Boost slider to the right doesn't improve flip or roll overshoot, put it back to the normal position, and seek out the reason for the overshoot or wobble.",
         "description": "D_min slider helpicon message"
     },
     "pidTuningRollPitchRatioSlider": {

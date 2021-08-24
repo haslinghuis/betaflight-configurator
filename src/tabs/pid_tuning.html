@@ -117,29 +117,29 @@
                             <tr class="ROLL">
                                 <!-- 0 -->
                                 <td class="pid_roll"></td>
-                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="dMinRoll" step="1" min="0" max="100" /></td>
+                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="dMinRoll" step="1" min="0" max="250" /></td>
                                 <td class="pid_data"><input type="number" name="f" step="1" min="0" max="2000" /></td>
 
                             </tr>
                             <tr class="PITCH">
                                 <!-- 1 -->
                                 <td class="pid_pitch"></td>
-                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="dMinPitch" step="1" min="0" max="100" /></td>
+                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="dMinPitch" step="1" min="0" max="250" /></td>
                                 <td class="pid_data"><input type="number" name="f" step="1" min="0" max="2000" /></td>
                             </tr>
                             <tr class="YAW">
                                 <!-- 2 -->
                                 <td class="pid_yaw"></td>
-                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="200" /></td>
-                                <td class="pid_data"><input type="number" name="dMinYaw" step="1" min="0" max="100" /></td>
+                                <td class="pid_data"><input type="number" name="p" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="i" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="d" step="1" min="0" max="250" /></td>
+                                <td class="pid_data"><input type="number" name="dMinYaw" step="1" min="0" max="250" /></td>
                                 <td class="pid_data"><input type="number" name="f" step="1" min="0" max="2000" /></td>
                             </tr>
                             <tr class="YAW_JUMP_PREVENTION">
@@ -189,20 +189,6 @@
                             </tr>
                         </table>
                         <table class="sliderLabels">
-                            <tr class="masterSlider">
-                                <td>
-                                    <span i18n="pidTuningMasterSlider"></span>
-                                </td>
-                                <td>
-                                    <output type="number" name="sliderMasterMultiplier-number"></output>
-                                </td>
-                                <td colspan="3">
-                                    <input type="range" min="0.5" max="1.5" step="0.025" class="tuningSlider" id="sliderMasterMultiplier" />
-                                </td>
-                                <td>
-                                    <div class="helpicon cf_tip" i18n_title="pidTuningMasterSliderHelp"></div>
-                                </td>
-                            </tr>
                             <tr class="legacySlider">
                                 <td>
                                     <span i18n="pidTuningPDRatioSlider"/>
@@ -344,7 +330,21 @@
                                     <div class="helpicon cf_tip" i18n_title="pidTuningPitchPIGainSliderHelp"></div>
                                 </td>
                             </tr>
-
+                            <tr class="masterSlider">
+                                <td>
+                                    <span i18n="pidTuningMasterSlider"></span>
+                                </td>
+                                <td>
+                                    <output type="number" name="sliderMasterMultiplier-number"></output>
+                                </td>
+                                <td colspan="3">
+                                    <input type="range" min="0.5" max="1.5" step="0.025" class="tuningSlider" id="sliderMasterMultiplier" />
+                                </td>
+                                <td>
+                                    <div class="helpicon cf_tip" i18n_title="pidTuningMasterSliderHelp"></div>
+                                </td>
+                            </tr>
+    
                          </table>
                     </div>
 
@@ -767,7 +767,7 @@
                                 <td><input type="checkbox" id="dMinSwitch" class="toggle" /></td>
                                 <td colspan="3">
                                     <div class="helpicon cf_tip" i18n_title="pidTuningDMinFeatureHelp"></div>
-                                    <span i18n="pidTuningDMin"></span>
+                                    <span i18n="pidTuningDMinFeatureTitle"></span>
 
                                     <span class="suboption">
                                         <input type="number" name="dMinGain" step="1" min="0" max="100" />

@@ -544,7 +544,7 @@ TABS.pid_tuning.initialize = function (callback) {
             const dValue = parseInt(dElement.val());
             const dMinValue = parseInt(dMinElement.val());
 
-            const dMinLimit = Math.min(Math.max(dValue - 1, 0), 100);
+            const dMinLimit = Math.min(Math.max(dValue - 1, 0), 250);
             if (dMinValue > dMinLimit) {
                 dMinElement.val(dMinLimit);
             }
@@ -1019,6 +1019,7 @@ TABS.pid_tuning.initialize = function (callback) {
 
             FC.TUNING_SLIDERS.slider_pids_mode = parseInt($('#sliderPidsModeSelect').val());
             //rounds slider values to nearies multiple of 5 and passes to the FW. Avoid dividing calc by (* x 100)/5 = 20
+            FC.TUNING_SLIDERS.slider_master_multiplier = Math.round(TuningSliders.sliderMasterMultiplier * 20) * 5;
             FC.TUNING_SLIDERS.slider_d_gain = Math.round(TuningSliders.sliderDGain * 20) * 5;
             FC.TUNING_SLIDERS.slider_pi_gain = Math.round(TuningSliders.sliderPIGain * 20) * 5;
             FC.TUNING_SLIDERS.slider_feedforward_gain = Math.round(TuningSliders.sliderFeedforwardGain * 20) * 5;
@@ -1876,7 +1877,7 @@ TABS.pid_tuning.initialize = function (callback) {
 
             let allPidTuningSliders;
             if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                allPidTuningSliders = $('#sliderDGain, #sliderPIGain, #sliderFeedforwardGain, #sliderIGain, #sliderDMinRatio, #sliderRollPitchRatio, #sliderPitchPIGain');
+                allPidTuningSliders = $('#sliderMasterMultiplier, #sliderDGain, #sliderPIGain, #sliderFeedforwardGain, #sliderIGain, #sliderDMinRatio, #sliderRollPitchRatio, #sliderPitchPIGain');
                 $('.tab-pid-tuning .legacySlider').hide();
                 $('.tab-pid_tuning .masterSlider').hide();
             } else {
@@ -1904,8 +1905,10 @@ TABS.pid_tuning.initialize = function (callback) {
                 const scaledValue = TuningSliders.scaleSliderValue(slider.val());
 
                 if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                    if (slider.is('#sliderRollPitchRatio')) {
-                        TuningSliders.sliderRollPitchRatio = scaledValue;
+                    if (slider.is('#sliderMasterMultiplier')) {
+                         TuningSliders.sliderMasterMultiplier = scaledValue;
+                    } else if (slider.is('#sliderRollPitchRatio')) {
+                         TuningSliders.sliderRollPitchRatio = scaledValue;
                     } else if (slider.is('#sliderIGain')) {
                         TuningSliders.sliderIGain = scaledValue;
                     } else if (slider.is('#sliderDGain')) {
@@ -1945,7 +1948,9 @@ TABS.pid_tuning.initialize = function (callback) {
                 const slider = $(this);
                 slider.val(1);
                 if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                    if (slider.is('#sliderRollPitchRatio')) {
+                    if (slider.is('#sliderMasterMultiplier')) {
+                     TuningSliders.sliderMasterMultiplier = 1;
+                    } else if (slider.is('#sliderRollPitchRatio')) {
                         TuningSliders.sliderRollPitchRatio = 1;
                     } else if (slider.is('#sliderIGain')) {
                         TuningSliders.sliderIGain = 1;

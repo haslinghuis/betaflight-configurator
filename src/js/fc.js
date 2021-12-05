@@ -877,7 +877,7 @@ const FC = {
             versionPidDefaults = [
                 45, 80, 40, 30, 120,
                 47, 84, 46, 34, 125,
-                45, 90,  0,  0, 120,
+                45, 80,  0,  0, 120,
             ];
         }
         return versionPidDefaults;

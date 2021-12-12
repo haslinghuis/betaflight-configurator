@@ -1486,7 +1486,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 break;
 
             case MSPCodes.MSP_SET_TUNING_SLIDERS:
-	        // This is done in a loop whenever the sliders are moved. Avoid logging to optimise the performance.
+                console.log('Tuning Sliders sent');
                 break;
 
             case MSPCodes.MSP_TUNING_SLIDERS:
@@ -1503,12 +1503,61 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 FC.TUNING_SLIDERS.slider_dterm_filter_multiplier = data.readU8();
                 FC.TUNING_SLIDERS.slider_gyro_filter = data.readU8();
                 FC.TUNING_SLIDERS.slider_gyro_filter_multiplier = data.readU8();
-                break;
 
+                break;
+            case MSPCodes.MSP_CALC_PID_TUNING_SLIDERS:
+                FC.PIDS[0][0] = data.readU8();
+                FC.PIDS[0][1] = data.readU8();
+                FC.PIDS[0][2] = data.readU8();
+                FC.ADVANCED_TUNING.dMinRoll = data.readU8();
+                FC.ADVANCED_TUNING.feedforwardRoll = data.readU16();
+
+                if (FC.TUNING_SLIDERS.slider_pids_mode > 0) {
+                    FC.PIDS[1][0] = data.readU8();
+                    FC.PIDS[1][1] = data.readU8();
+                    FC.PIDS[1][2] = data.readU8();
+                    FC.ADVANCED_TUNING.dMinPitch = data.readU8();
+                    FC.ADVANCED_TUNING.feedforwardPitch = data.readU16();
+                }
+
+                if (FC.TUNING_SLIDERS.slider_pids_mode > 1) {
+                    FC.PIDS[2][0] = data.readU8();
+                    FC.PIDS[2][1] = data.readU8();
+                    FC.PIDS[2][2] = data.readU8();
+                    FC.ADVANCED_TUNING.dMinYaw = data.readU8();
+                    FC.ADVANCED_TUNING.feedforwardYaw = data.readU16();
+                }
+
+                break;
+            case MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS:
+                FC.FILTER_CONFIG.gyro_lowpass_hz = data.readU16();
+                FC.FILTER_CONFIG.gyro_lowpass2_hz = data.readU16();
+                FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz = data.readU16();
+                FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz = data.readU16();
+
+                break;
+            case MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS:
+                FC.FILTER_CONFIG.dterm_lowpass_hz = data.readU16();
+                FC.FILTER_CONFIG.dterm_lowpass2_hz = data.readU16();
+                FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz = data.readU16();
+                FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz = data.readU16();
+
+                break;
+            case MSPCodes.MSP_VALIDATE_TUNING_SLIDERS:
+                FC.TUNING_SLIDERS.slider_pids_valid = data.readU8();
+                FC.TUNING_SLIDERS.slider_gyro_valid = data.readU8();
+                FC.TUNING_SLIDERS.slider_dterm_valid = data.readU8();
+
+                break;
+            case MSPCodes.MSP_APPLY_PID_TUNING_SLIDERS:
+                break;
+            case MSPCodes.MSP_APPLY_GYRO_TUNING_SLIDERS:
+                break;
+            case MSPCodes.MSP_APPLY_DTERM_TUNING_SLIDERS:
+                break;
             case MSPCodes.MSP_SET_VTXTABLE_POWERLEVEL:
                 console.log("VTX powerlevel sent");
                 break;
-
             case MSPCodes.MSP_SET_MODE_RANGE:
                 console.log('Mode range saved');
                 break;
@@ -2315,19 +2364,65 @@ MspHelper.prototype.crunch = function(code) {
 
         case MSPCodes.MSP_SET_TUNING_SLIDERS:
             buffer
-                .push8(FC.TUNING_SLIDERS.slider_pids_mode)
-                .push8(FC.TUNING_SLIDERS.slider_master_multiplier)
-                .push8(FC.TUNING_SLIDERS.slider_roll_pitch_ratio)
-                .push8(FC.TUNING_SLIDERS.slider_i_gain)
-                .push8(FC.TUNING_SLIDERS.slider_d_gain)
-                .push8(FC.TUNING_SLIDERS.slider_pi_gain)
-                .push8(FC.TUNING_SLIDERS.slider_dmax_gain)
-                .push8(FC.TUNING_SLIDERS.slider_feedforward_gain)
-                .push8(FC.TUNING_SLIDERS.slider_pitch_pi_gain)
-                .push8(FC.TUNING_SLIDERS.slider_dterm_filter)
-                .push8(FC.TUNING_SLIDERS.slider_dterm_filter_multiplier)
-                .push8(FC.TUNING_SLIDERS.slider_gyro_filter)
-                .push8(FC.TUNING_SLIDERS.slider_gyro_filter_multiplier);
+            .push8(0) // set sliders values, don't apply
+            .push8(FC.TUNING_SLIDERS.slider_pids_mode)
+            .push8(FC.TUNING_SLIDERS.slider_master_multiplier)
+            .push8(FC.TUNING_SLIDERS.slider_roll_pitch_ratio)
+            .push8(FC.TUNING_SLIDERS.slider_i_gain)
+            .push8(FC.TUNING_SLIDERS.slider_d_gain)
+            .push8(FC.TUNING_SLIDERS.slider_pi_gain)
+            .push8(FC.TUNING_SLIDERS.slider_dmax_gain)
+            .push8(FC.TUNING_SLIDERS.slider_feedforward_gain)
+            .push8(FC.TUNING_SLIDERS.slider_pitch_pi_gain)
+
+            .push8(FC.TUNING_SLIDERS.slider_dterm_filter)
+            .push8(FC.TUNING_SLIDERS.slider_dterm_filter_multiplier)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass2_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz)
+
+            .push8(FC.TUNING_SLIDERS.slider_gyro_filter)
+            .push8(FC.TUNING_SLIDERS.slider_gyro_filter_multiplier)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass2_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz);
+
+            break;
+        case MSPCodes.MSP_CALC_PID_TUNING_SLIDERS:
+            buffer
+            .push8(FC.TUNING_SLIDERS.slider_pids_mode)
+            .push8(FC.TUNING_SLIDERS.slider_master_multiplier)
+            .push8(FC.TUNING_SLIDERS.slider_roll_pitch_ratio)
+            .push8(FC.TUNING_SLIDERS.slider_i_gain)
+            .push8(FC.TUNING_SLIDERS.slider_d_gain)
+            .push8(FC.TUNING_SLIDERS.slider_pi_gain)
+            .push8(FC.TUNING_SLIDERS.slider_dmax_gain)
+            .push8(FC.TUNING_SLIDERS.slider_feedforward_gain)
+            .push8(FC.TUNING_SLIDERS.slider_pitch_pi_gain);
+
+            break;
+
+        case MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS:
+            buffer
+            .push8(FC.TUNING_SLIDERS.slider_gyro_filter)
+            .push8(FC.TUNING_SLIDERS.slider_gyro_filter_multiplier)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass2_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz)
+            .push16(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz);
+
+            break;
+        case MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS:
+            buffer
+            .push8(FC.TUNING_SLIDERS.slider_dterm_filter)
+            .push8(FC.TUNING_SLIDERS.slider_dterm_filter_multiplier)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass2_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz)
+            .push16(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz);
+
             break;
 
         default:

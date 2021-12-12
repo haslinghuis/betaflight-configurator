@@ -120,6 +120,16 @@ const MSPCodes = {
     MSP_TUNING_SLIDERS:             140,
     MSP_SET_TUNING_SLIDERS:         141,
 
+    MSP_CALC_PID_TUNING_SLIDERS:    142,    // calculate slider values in temp profile
+    MSP_CALC_GYRO_TUNING_SLIDERS:   143,
+    MSP_CALC_DTERM_TUNING_SLIDERS:  144,
+
+    MSP_VALIDATE_TUNING_SLIDERS:    145,    // validate slider values in temp profile
+
+    MSP_APPLY_PID_TUNING_SLIDERS:   146,    // copy slider values to profile
+    MSP_APPLY_GYRO_TUNING_SLIDERS:  147,
+    MSP_APPLY_DTERM_TUNING_SLIDERS: 148,
+
     MSP_STATUS_EX:                  150,
 
     MSP_UID:                        160,

@@ -292,7 +292,6 @@ TuningSliders.resetPidSliders = function() {
 
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         this.calculateNewPids();
-        this.updateFormPids();
         this.initPidSlidersPosition();
         this.updatePidSlidersDisplay();
     } else {
@@ -319,6 +318,9 @@ TuningSliders.resetDTermFilterSlider = function() {
 };
 
 TuningSliders.legacyUpdateFilterSlidersDisplay = function() {
+    this.GyroSliderUnavailable = false;
+    this.DTermSliderUnavailable = false;
+
     if (parseInt($('.pid_filter input[name="gyroLowpassDynMinFrequency"]').val()) !==
             Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier) ||
         parseInt($('.pid_filter input[name="gyroLowpassDynMaxFrequency"]').val()) !==
@@ -520,8 +522,6 @@ TuningSliders.updateFilterSlidersDisplay = function() {
         this.updateGyroFilterSliderDisplay();
         this.updateDTermFilterSliderDisplay();
     } else {
-        this.GyroSliderUnavailable = false;
-        this.DTermSliderUnavailable = false;
         this.legacyUpdateFilterSlidersDisplay();
     }
 
@@ -670,13 +670,7 @@ TuningSliders.calculateNewPids = function(updateSlidersOnly = false) {
         FC.TUNING_SLIDERS.slider_pitch_pi_gain = Math.round(this.sliderPitchPIGain * 20) * 5;
         FC.TUNING_SLIDERS.slider_master_multiplier = Math.round(this.sliderMasterMultiplier * 20) * 5;
 
-        MSP.promise(MSPCodes.MSP_SET_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_SET_TUNING_SLIDERS))
-        .then(() => MSP.promise(MSPCodes.MSP_PID))
-        .then(() => MSP.promise(MSPCodes.MSP_PID_ADVANCED))
-        .then(() => {
-            this.updateFormPids(updateSlidersOnly);
-            this.updateSlidersWarning();
-        });
+        this.readSimplifiedPids();
     } else {
         this.legacyCalculatePids(updateSlidersOnly);
     }
@@ -712,9 +706,7 @@ TuningSliders.calculateNewGyroFilters = function() {
     // this is the main calculation for Gyro Filter slider, inputs are in form of slider position values
     // values get set both into forms and their respective variables
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-        //rounds slider values to nearies multiple of 5 and passes to the FW. Avoid dividing calc by (* x 100)/5 = 20
-        FC.TUNING_SLIDERS.slider_gyro_filter_multiplier = Math.round(this.sliderGyroFilterMultiplier * 20) * 5;
-        this.writeFilterSliders();
+        this.readSimplifiedGyroFilters();
     } else {
         this.calculateLegacyGyroFilters();
     }
@@ -724,45 +716,75 @@ TuningSliders.calculateNewDTermFilters = function() {
     // this is the main calculation for DTerm Filter slider, inputs are in form of slider position values
     // values get set both into forms and their respective variables
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-        //rounds slider values to nearies multiple of 5 and passes to the FW. Avoid divide by ROUND[(* x 100)/5 = 20]
-        FC.TUNING_SLIDERS.slider_dterm_filter_multiplier = Math.round(this.sliderDTermFilterMultiplier * 20) * 5;
-        this.writeFilterSliders();
+        this.readSimplifiedDtermFilters();
     } else {
         this.calculateLegacyDTermFilters();
     }
 };
 
-// We need to write filter config to switch filters without having to save.
-TuningSliders.updateFiltersInFirmware = function(filter) {
-    const writeFilters = () => {
-        MSP.promise(MSPCodes.MSP_SET_FILTER_CONFIG, mspHelper.crunch(MSPCodes.MSP_SET_FILTER_CONFIG))
-        .then(() => MSP.promise(MSPCodes.MSP_SET_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_SET_TUNING_SLIDERS)))
-        .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
-        .then(() => this.updateLowpassValues());
-    };
 
-    if (filter === 'gyro') {
-        FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz = parseInt($('.pid_filter input[name="gyroLowpassDynMinFrequency"]').val());
-        FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz = parseInt($('.pid_filter input[name="gyroLowpassDynMaxFrequency"]').val());
-        FC.FILTER_CONFIG.gyro_lowpass_hz = parseInt($('.pid_filter input[name="gyroLowpassFrequency"]').val());
-        FC.FILTER_CONFIG.gyro_lowpass2_hz = parseInt($('.pid_filter input[name="gyroLowpass2Frequency"]').val());
-        if (this.sliderGyroFilter) {
-            writeFilters();
-        }
-    } else if (filter === 'dterm') {
-        FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz = parseInt($('.pid_filter input[name="dtermLowpassDynMinFrequency"]').val());
-        FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz = parseInt($('.pid_filter input[name="dtermLowpassDynMinFrequency"]').val());
-        FC.FILTER_CONFIG.dterm_lowpass_hz = parseInt($('.pid_filter input[name="dtermLowpassFrequency"]').val());
-        FC.FILTER_CONFIG.dterm_lowpass2_hz = parseInt($('.pid_filter input[name="dtermLowpass2Frequency"]').val());
-        if (this.sliderDTermFilter) {
-            writeFilters();
-        }
-    }
+TuningSliders.readSimplifiedPids = function(updateSlidersOnly = false) {
+    FC.TUNING_SLIDERS.slider_master_multiplier = this.sliderMasterMultiplier * 100;
+    FC.TUNING_SLIDERS.slider_roll_pitch_ratio = this.sliderRollPitchRatio * 100;
+    FC.TUNING_SLIDERS.slider_i_gain = this.sliderIGain * 100;
+    FC.TUNING_SLIDERS.slider_d_gain = this.sliderDGain * 100;
+    FC.TUNING_SLIDERS.slider_pi_gain = this.sliderPIGain * 100;
+    FC.TUNING_SLIDERS.slider_dmax_gain = this.sliderDMaxGain * 100;
+    FC.TUNING_SLIDERS.slider_feedforward_gain = this.sliderFeedforwardGain * 100;
+    FC.TUNING_SLIDERS.slider_pitch_pi_gain = this.sliderPitchPIGain * 100;
+
+    MSP.promise(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS)
+    .then(() => MSP.promise(MSPCodes.MSP_PID))
+    .then(() => MSP.promise(MSPCodes.MSP_PID_ADVANCED))
+    .then(() => {
+        this.updateFormPids(updateSlidersOnly);
+        this.updateSlidersWarning();
+    });
+};
+
+TuningSliders.readSimplifiedGyroFilters = function() {
+    FC.TUNING_SLIDERS.slider_gyro_filter = this.sliderGyroFilter;
+    FC.TUNING_SLIDERS.slider_gyro_filter_multiplier = this.sliderGyroFilterMultiplier * 100;
+
+    MSP.promise(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS)
+    .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
+    .then(() => this.updateGyroLowpassValues());
+};
+
+TuningSliders.readSimplifiedDTermFilters = function() {
+    FC.TUNING_SLIDERS.slider_dterm_filter = this.sliderDTermFilter;
+    FC.TUNING_SLIDERS.slider_dterm_filter_multiplier = this.sliderDTermFilterMultiplier * 100;
+
+    MSP.promise(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS)
+    .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
+    .then(() => this.updateDTermLowpassValues());
+};
+
+TuningSliders.validateTuningSliders = function() {
+    MSP.promise(MSPCodes.MSP_VALIDATE_TUNING_SLIDERS)
+    .then(() => {
+        this.sliderPidsMode = FC.TUNING_SLIDERS.slider_pids_valid;
+        this.sliderGyroFilter = FC.TUNING_SLIDERS.slider_gyro_valid;
+        this.sliderDTermFilter = FC.TUNING_SLIDERS.slider_dterm_valid;
+    });
+};
+
+TuningSliders.writePids = function() {
+    MSP.promise(MSPCodes.MSP_APPLY_PID_TUNING_SLIDERS);
+};
+
+TuningSliders.writeGyroLowpassFilters = function() {
+    MSP.promise(MSPCodes.MSP_APPLY_GYRO_TUNING_SLIDERS);
+};
+
+TuningSliders.writeDtermLowpassFilters = function() {
+    MSP.promise(MSPCodes.MSP_APPLY_DTERM_TUNING_SLIDERS);
 };
 
 TuningSliders.writeFilterSliders = function () {
     // send sliders to firmware
-    MSP.promise(MSPCodes.MSP_SET_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_SET_TUNING_SLIDERS))
+    MSP.promise(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS)
+    .then(() => MSP.promise(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS))
     // pulls values from firmware
     .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
     .then(() => {
@@ -782,6 +804,22 @@ TuningSliders.updateLowpassValues = function() {
     $('.pid_filter input[name="gyroLowpass2Frequency"]').val(FC.FILTER_CONFIG.gyro_lowpass2_hz);
     $('output[name="sliderGyroFilterMultiplier-number"]').val(this.sliderGyroFilterMultiplier);
 
+    $('.pid_filter input[name="dtermLowpassDynMinFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz);
+    $('.pid_filter input[name="dtermLowpassDynMaxFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz);
+    $('.pid_filter input[name="dtermLowpassFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_hz);
+    $('.pid_filter input[name="dtermLowpass2Frequency"]').val(FC.FILTER_CONFIG.dterm_lowpass2_hz);
+    $('output[name="sliderDTermFilterMultiplier-number"]').val(this.sliderDTermFilterMultiplier);
+};
+
+TuningSliders.updateGyroLowpassValues = function() {
+    $('.pid_filter input[name="gyroLowpassDynMinFrequency"]').val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz);
+    $('.pid_filter input[name="gyroLowpassDynMaxFrequency"]').val(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz);
+    $('.pid_filter input[name="gyroLowpassFrequency"]').val(FC.FILTER_CONFIG.gyro_lowpass_hz);
+    $('.pid_filter input[name="gyroLowpass2Frequency"]').val(FC.FILTER_CONFIG.gyro_lowpass2_hz);
+    $('output[name="sliderGyroFilterMultiplier-number"]').val(this.sliderGyroFilterMultiplier);
+};
+
+TuningSliders.updateDTermLowpassValues = function() {
     $('.pid_filter input[name="dtermLowpassDynMinFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz);
     $('.pid_filter input[name="dtermLowpassDynMaxFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz);
     $('.pid_filter input[name="dtermLowpassFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_hz);

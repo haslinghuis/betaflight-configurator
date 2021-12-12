@@ -460,14 +460,8 @@ TuningSliders.updateGyroFilterSliderDisplay = function() {
     const lp1Static = parseInt($('.pid_filter input[name="gyroLowpassFrequency"]').val());
     const lp2Freq = parseInt($('.pid_filter input[name="gyroLowpass2Frequency"]').val());
 
-    const lp1DynamicMinChanged = (lp1DynMin > 0) && (lp1DynMin !== Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier));
-    const lp1DynamicMaxChanged = (lp1DynMax > 0) && (lp1DynMax !== Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz * this.sliderGyroFilterMultiplier));
-    const lp1Changed = (lp1Static > 0) && (lp1Static !== Math.floor(this.FILTER_DEFAULT.gyro_lowpass_hz * this.sliderGyroFilterMultiplier));
-    const lp2Changed = (lp2Freq > 0) && (lp2Freq !== Math.floor(this.FILTER_DEFAULT.gyro_lowpass2_hz * this.sliderGyroFilterMultiplier));
-
-    const lpxChanged = lp1DynamicMinChanged || lp1DynamicMaxChanged || lp1Changed || lp2Changed;
     const lpxDisabled = lp1DynMin === 0 && lp1Static === 0 && lp2Freq === 0;
-    const hideSlider = lpxChanged || lpxDisabled || FC.TUNING_SLIDERS.slider_gyro_filter === 0;
+    const hideSlider = lpxDisabled || FC.TUNING_SLIDERS.slider_gyro_filter === 0;
 
     if (hideSlider) {
         this.GyroSliderUnavailable = true;
@@ -491,14 +485,8 @@ TuningSliders.updateDTermFilterSliderDisplay = function() {
     const lp1Static = parseInt($('.pid_filter input[name="dtermLowpassFrequency"]').val());
     const lp2Freq = parseInt($('.pid_filter input[name="dtermLowpass2Frequency"]').val());
 
-    const lp1DynamicMinChanged = (lp1DynMin > 0) && (lp1DynMin !== Math.floor(this.FILTER_DEFAULT.dterm_lowpass_dyn_min_hz * this.sliderDTermFilterMultiplier));
-    const lp1DynamicMaxChanged = (lp1DynMax > 0) && (lp1DynMax !== Math.floor(this.FILTER_DEFAULT.dterm_lowpass_dyn_max_hz * this.sliderDTermFilterMultiplier));
-    const lp1Changed = (lp1Static > 0) && (lp1Static !== Math.floor(this.FILTER_DEFAULT.dterm_lowpass_hz * this.sliderDTermFilterMultiplier));
-    const lp2Changed = (lp2Freq > 0) && (lp2Freq !== Math.floor(this.FILTER_DEFAULT.dterm_lowpass2_hz * this.sliderDTermFilterMultiplier));
-
-    const lpxChanged = lp1DynamicMinChanged || lp1DynamicMaxChanged || lp1Changed || lp2Changed;
     const lpxDisabled = lp1DynMin === 0 && lp1Static === 0 && lp2Freq === 0;
-    const hideSlider = lpxChanged || lpxDisabled || FC.TUNING_SLIDERS.slider_dterm_filter === 0;
+    const hideSlider = lpxDisabled || FC.TUNING_SLIDERS.slider_dterm_filter === 0;
 
     if (hideSlider) {
         this.DTermSliderUnavailable = true;
@@ -536,6 +524,7 @@ TuningSliders.gyroFilterSliderEnable = function() {
     this.writeFilterSliders();
     this.updateLowpassValues();
     this.updateGyroFilterSliderDisplay();
+    this.calculateNewGyroFilters();
 };
 
 TuningSliders.gyroFilterSliderDisable = function() {
@@ -543,6 +532,7 @@ TuningSliders.gyroFilterSliderDisable = function() {
     this.FilterReset = true;
     FC.TUNING_SLIDERS.slider_gyro_filter = 0;
     this.writeFilterSliders();
+    this.updateGyroFilterSliderDisplay();
 };
 
 TuningSliders.dtermFilterSliderEnable = function() {
@@ -552,6 +542,7 @@ TuningSliders.dtermFilterSliderEnable = function() {
     this.writeFilterSliders();
     this.updateLowpassValues();
     this.updateDTermFilterSliderDisplay();
+    this.calculateNewDTermFilters();
 };
 
 TuningSliders.dtermFilterSliderDisable = function() {
@@ -559,6 +550,7 @@ TuningSliders.dtermFilterSliderDisable = function() {
     this.FilterReset = true;
     FC.TUNING_SLIDERS.slider_dterm_filter = 0;
     this.writeFilterSliders();
+    this.updateDTermFilterSliderDisplay();
 };
 
 TuningSliders.updateFormPids = function(updateSlidersOnly = false) {
@@ -716,7 +708,7 @@ TuningSliders.calculateNewDTermFilters = function() {
     // this is the main calculation for DTerm Filter slider, inputs are in form of slider position values
     // values get set both into forms and their respective variables
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-        this.readSimplifiedDtermFilters();
+        this.readSimplifiedDTermFilters();
     } else {
         this.calculateLegacyDTermFilters();
     }
@@ -733,9 +725,7 @@ TuningSliders.readSimplifiedPids = function(updateSlidersOnly = false) {
     FC.TUNING_SLIDERS.slider_feedforward_gain = this.sliderFeedforwardGain * 100;
     FC.TUNING_SLIDERS.slider_pitch_pi_gain = this.sliderPitchPIGain * 100;
 
-    MSP.promise(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS)
-    .then(() => MSP.promise(MSPCodes.MSP_PID))
-    .then(() => MSP.promise(MSPCodes.MSP_PID_ADVANCED))
+    MSP.promise(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS))
     .then(() => {
         this.updateFormPids(updateSlidersOnly);
         this.updateSlidersWarning();
@@ -746,8 +736,7 @@ TuningSliders.readSimplifiedGyroFilters = function() {
     FC.TUNING_SLIDERS.slider_gyro_filter = this.sliderGyroFilter;
     FC.TUNING_SLIDERS.slider_gyro_filter_multiplier = this.sliderGyroFilterMultiplier * 100;
 
-    MSP.promise(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS)
-    .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
+    MSP.promise(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS))
     .then(() => this.updateGyroLowpassValues());
 };
 
@@ -755,8 +744,7 @@ TuningSliders.readSimplifiedDTermFilters = function() {
     FC.TUNING_SLIDERS.slider_dterm_filter = this.sliderDTermFilter;
     FC.TUNING_SLIDERS.slider_dterm_filter_multiplier = this.sliderDTermFilterMultiplier * 100;
 
-    MSP.promise(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS)
-    .then(() => MSP.promise(MSPCodes.MSP_FILTER_CONFIG))
+    MSP.promise(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS))
     .then(() => this.updateDTermLowpassValues());
 };
 
@@ -782,6 +770,7 @@ TuningSliders.writeDtermLowpassFilters = function() {
 };
 
 TuningSliders.writeFilterSliders = function () {
+    return;
     // send sliders to firmware
     MSP.promise(MSPCodes.MSP_CALC_GYRO_TUNING_SLIDERS)
     .then(() => MSP.promise(MSPCodes.MSP_CALC_DTERM_TUNING_SLIDERS))

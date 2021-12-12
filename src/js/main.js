@@ -252,13 +252,6 @@ function startProcess() {
             const tabName = $(self).text();
             let timeout = 0;
 
-            if (GUI.active_tab === 'pid_tuning') {
-                if (TABS.pid_tuning.retainConfiguration) {
-                    TABS.pid_tuning.restoreInitialSettings();
-                    timeout = 500;
-                }
-            }
-
             if (tabRequiresConnection && !CONFIGURATOR.connectionValid) {
                 GUI.log(i18n.getMessage('tabSwitchConnectionRequired'));
                 return;

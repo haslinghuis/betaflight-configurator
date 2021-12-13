@@ -1512,7 +1512,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 FC.ADVANCED_TUNING.dMinRoll = data.readU8();
                 FC.ADVANCED_TUNING.feedforwardRoll = data.readU16();
 
-                if (FC.TUNING_SLIDERS.slider_pids_mode > 1) {
+                if (FC.TUNING_SLIDERS.slider_pids_mode > 0) {
                     FC.PIDS[1][0] = data.readU8();
                     FC.PIDS[1][1] = data.readU8();
                     FC.PIDS[1][2] = data.readU8();
@@ -1520,7 +1520,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                     FC.ADVANCED_TUNING.feedforwardPitch = data.readU16();
                 }
 
-                if (FC.TUNING_SLIDERS.slider_pids_mode > 2) {
+                if (FC.TUNING_SLIDERS.slider_pids_mode > 1) {
                     FC.PIDS[2][0] = data.readU8();
                     FC.PIDS[2][1] = data.readU8();
                     FC.PIDS[2][2] = data.readU8();

@@ -2171,14 +2171,6 @@ TABS.pid_tuning.initialize = function (callback) {
                         useIntegratedYaw.prop('checked', false).trigger('change');
                     }
 
-                    $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each(function() {
-                        $(this).prop('disabled', disableRP);
-                    });
-
-                    $('#pid_main .YAW .pid_data input').each(function() {
-                        $(this).prop('disabled', disableY);
-                    });
-
                     self.setDirty(true);
                 });
 

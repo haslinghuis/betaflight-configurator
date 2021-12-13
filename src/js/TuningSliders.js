@@ -357,12 +357,12 @@ TuningSliders.updatePidSlidersDisplay = function() {
     // if all of them are equal the values haven't been changed manually
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         console.log('sliderPidsMode', this.sliderPidsMode);
-        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each(function() {
-            $(this).prop('disabled', !this.sliderPidsMode);
+        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each((index, element) => {
+            $(element).prop('disabled', this.sliderPidsMode > 0);
         });
 
-        $('#pid_main .YAW .pid_data input').each(function() {
-            $(this).prop('disabled', this.sliderPidsMode !== 2);
+        $('#pid_main .YAW .pid_data input').each((index, element) => {
+            $(element).prop('disabled', this.sliderPidsMode === 2);
         });
 
         $('.baseSlider').toggleClass('disabledSliders', !this.sliderPidsMode);

@@ -711,7 +711,7 @@ TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
     }
 
     this.updateFormPids(updateSlidersOnly);
-    // TABS.pid_tuning.updatePIDColors();
+    TABS.pid_tuning.updatePIDColors();
     this.updateSlidersWarning();
 };
 

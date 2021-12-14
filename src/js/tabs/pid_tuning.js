@@ -2037,11 +2037,10 @@ TABS.pid_tuning.initialize = function (callback) {
             });
         });
 
-        // exclude integratedYaw from setDirty for 4.3 as it uses RP mode.
         $('#pid-tuning').find('input').each(function (k, item) {
             if ($(item).attr('class') !== "feature toggle"
                 && $(item).attr('class') !== "nonProfile"
-                && (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) && $(item).attr('id'))) {
+                ) {
                 $(item).change(function () {
                     self.setDirty(true);
                 });
@@ -2167,8 +2166,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     if (setMode === 2) {
                         useIntegratedYaw.prop('checked', false).trigger('change');
                     }
-
-                    self.setDirty(true);
                 });
 
                 sliderGyroFilterModeSelect.change(function() {
@@ -2179,8 +2176,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else {
                         TuningSliders.gyroFilterSliderDisable();
                     }
-
-                    self.setDirty(true);
                 });
 
                 sliderDTermFilterModeSelect.change(function() {
@@ -2191,8 +2186,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else {
                         TuningSliders.dtermFilterSliderDisable();
                     }
-
-                    self.setDirty(true);
                 });
             }
 
@@ -2256,8 +2249,8 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else if (slider.is('#sliderFeedforwardGainLegacy')) {
                         TuningSliders.sliderFeedforwardGainLegacy = sliderValue;
                     }
-                    self.setDirty(true);
                 }
+
                 self.calculateNewPids();
                 self.analyticsChanges['PidTuningSliders'] = "On";
             });
@@ -2306,7 +2299,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
                 slider.val(value);
-
                 self.calculateNewPids();
             });
 
@@ -2392,7 +2384,6 @@ TABS.pid_tuning.initialize = function (callback) {
                 if (TuningSliders.DTermSliderUnavailable) {
                     self.analyticsChanges['DTermFilterTuningSlider'] = "Off";
                 }
-                self.setDirty(true);
             });
 
             // update on filter switch changes
@@ -2467,7 +2458,6 @@ TABS.pid_tuning.initialize = function (callback) {
                 // update on pid table inputs
                 $('#pid_main input').on('input', function() {
                     TuningSliders.updatePidSlidersDisplay();
-                    self.setDirty(true);
                     self.analyticsChanges['PidTuningSliders'] = "Off";
                 });
             }

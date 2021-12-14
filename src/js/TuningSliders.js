@@ -44,10 +44,11 @@ const D_MIN_RATIO = 0.85;
 TuningSliders.setDMinFeatureEnabled = function(dMinFeatureEnabled) {
     this.dMinFeatureEnabled = dMinFeatureEnabled;
     if (this.dMinFeatureEnabled) {
-        this.defaultPDRatio = this.PID_DEFAULT[2] / this.PID_DEFAULT[0];
+        this.defaultPDRatio = Math.round(this.PID_DEFAULT[2] / this.PID_DEFAULT[0]);
     } else {
-        this.defaultPDRatio = this.PID_DEFAULT[2] / (this.PID_DEFAULT[0] * (1 / D_MIN_RATIO));
+        this.defaultPDRatio = Math.round(this.PID_DEFAULT[2] / (this.PID_DEFAULT[0] * (1 / D_MIN_RATIO)));
     }
+    console.log(this.sliderPDRatio, this.defaultPDRatio, this.PID_DEFAULT[2], this.PID_DEFAULT[0], 1 / D_MIN_RATIO);
 };
 
 TuningSliders.initialize = function() {
@@ -81,8 +82,21 @@ TuningSliders.initialize = function() {
     } else {
         this.setDMinFeatureEnabled($('#dMinSwitch').is(':checked'));
 
+        if (this.dMinFeatureEnabled) {
+            FC.ADVANCED_TUNING.dMinRoll = FC.PIDS_ACTIVE[0][2];
+            FC.ADVANCED_TUNING.dMinPitch = FC.PIDS_ACTIVE[1][2];
+            FC.ADVANCED_TUNING.dMinYaw = FC.PIDS_ACTIVE[2][2];
+        } else {
+            FC.PIDS[0][2] = FC.ADVANCED_TUNING.dMinRoll;
+            FC.PIDS[1][2] = FC.ADVANCED_TUNING.dMinPitch;
+            FC.PIDS[2][2] = FC.ADVANCED_TUNING.dMinYaw;
+        }
+
         this.updatePidSlidersDisplay();
         this.updateFilterSlidersDisplay();
+
+        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each((_, el) => $(el).prop('disabled', false));
+        $('#pid_main .YAW .pid_data input').each((_, el) => $(el).prop('disabled', false));
 
         $('select[id="sliderGyroFilterModeSelect"]').hide();
         $('select[id="sliderDTermFilterModeSelect"]').hide();
@@ -214,13 +228,15 @@ TuningSliders.initPidSlidersPosition = function() {
     } else {
         // used to estimate PID slider positions based on PIDF values, and set respective slider position
         // provides only an estimation due to limitation of feature without firmware support, to be improved in later versions
-        this.sliderMasterMultiplierLegacy = Math.round(FC.PIDS[2][1] / this.PID_DEFAULT[11] * 10) / 10;
-        this.sliderPDRatio = Math.round(FC.PIDS[0][2] / FC.PIDS[0][0] / this.defaultPDRatio * 10) / 10;
+        this.sliderMasterMultiplierLegacy = Math.round(FC.PIDS_ACTIVE[2][1] / this.PID_DEFAULT[11] * 10) / 10;
+        this.sliderPDRatio = Math.round(FC.PIDS_ACTIVE[0][2] / FC.PIDS_ACTIVE[0][0] / this.defaultPDRatio * 10) / 10;
+        console.log('sliderPDRatio', this.sliderPDRatio, FC.PIDS_ACTIVE[0][2], FC.PIDS_ACTIVE[0][0], this.defaultPDRatio);
         if (this.dMinFeatureEnabled) {
             this.sliderPDGain = Math.round(FC.ADVANCED_TUNING.dMinRoll / this.sliderPDRatio / this.sliderMasterMultiplierLegacy / this.PID_DEFAULT[3] * 10) / 10;
         } else {
-            this.sliderPDGain = Math.round(FC.PIDS[0][0] / this.sliderMasterMultiplierLegacy / (this.PID_DEFAULT[2] * (1 / D_MIN_RATIO)) * 10) / 10;
+            this.sliderPDGain = Math.round(FC.PIDS_ACTIVE[0][0] / this.sliderMasterMultiplierLegacy / (this.PID_DEFAULT[2] * (1 / D_MIN_RATIO)) * 10) / 10;
         }
+        console.log('sliderPDGain', this.sliderPDGain);
         this.sliderFeedforwardGainLegacy = Math.round(FC.ADVANCED_TUNING.feedforwardRoll / this.sliderMasterMultiplierLegacy / this.PID_DEFAULT[4] * 10) / 10;
 
         $('output[name="sliderMasterMultiplierLegacy-number"]').val(this.sliderMasterMultiplierLegacy);
@@ -356,9 +372,8 @@ TuningSliders.updatePidSlidersDisplay = function() {
     // check if pid values changed manually by comparing the current values with those calculated by the sliders,
     // if all of them are equal the values haven't been changed manually
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-        console.log('sliderPidsMode', this.sliderPidsMode);
-        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each((index, el) => $(el).prop('disabled', this.sliderPidsMode > 0));
-        $('#pid_main .YAW .pid_data input').each((index, el) => $(el).prop('disabled', this.sliderPidsMode === 2));
+        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each((_, el) => $(el).prop('disabled', this.sliderPidsMode > 0));
+        $('#pid_main .YAW .pid_data input').each((_, el) => $(el).prop('disabled', this.sliderPidsMode === 2));
 
         $('.baseSlider').toggleClass('disabledSliders', !this.sliderPidsMode);
         $('.advancedSlider').toggleClass('disabledSliders', !this.sliderPidsMode);
@@ -383,7 +398,6 @@ TuningSliders.updatePidSlidersDisplay = function() {
             pidElements.each(function (indexInput) {
                 if (indexPid < 3 && indexInput < 3) {
                     if (parseInt($(this).val()) !== FC.PIDS[indexPid][indexInput]) {
-                        console.log('SOMETHING WRONG HERE', $(this).val(), FC.PIDS[indexPid][indexInput]);
                         TuningSliders.pidSlidersUnavailable = true;
                     }
                 }
@@ -483,7 +497,6 @@ TuningSliders.updateFilterSlidersDisplay = function() {
 TuningSliders.updateFormPids = function(updateSlidersOnly = false) {
 
     if (!updateSlidersOnly) {
-        console.log('WE ARE HERE');
         FC.PID_NAMES.forEach(function (elementPid, indexPid) {
             const pidElements = $(`.pid_tuning .${elementPid} input`);
             pidElements.each(function (indexInput) {
@@ -675,7 +688,7 @@ TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
     //master slider multiplication, max value 200 for main PID values
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            FC.PIDS[j][i] = Math.min(Math.round(FC.PIDS[j][i] * this.sliderMasterMultiplierLegacy), MAX_PID_GAIN);
+            FC.PIDS[j][i] = Math.min(Math.round(FC.PIDS_ACTIVE[j][i] * this.sliderMasterMultiplierLegacy), MAX_PID_GAIN);
         }
     }
 
@@ -690,7 +703,7 @@ TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
     }
 
     this.updateFormPids(updateSlidersOnly);
-    TABS.pid_tuning.updatePIDColors();
+    // TABS.pid_tuning.updatePIDColors();
     this.updateSlidersWarning();
 };
 

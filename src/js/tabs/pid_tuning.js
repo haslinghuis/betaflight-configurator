@@ -94,9 +94,9 @@ TABS.pid_tuning.initialize = function (callback) {
             const searchRow = $('.pid_tuning .' + elementPid + ' input');
 
             // Assign each value
-            searchRow.each(function (indexInput) {
+            searchRow.each((indexInput, element) => {
                 if (FC.PIDS[indexPid][indexInput] !== undefined) {
-                    $(this).val(FC.PIDS[indexPid][indexInput]);
+                    $(element).val(FC.PIDS_ACTIVE[indexPid][indexInput]);
                 }
             });
         });
@@ -2163,9 +2163,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     TuningSliders.calculateNewPids();
                     TuningSliders.updatePidSlidersDisplay();
 
-                    const disableRP = !!setMode;
-                    const disableY = setMode > 1;
-
                     // disable Integrated Yaw when going into RPY mode
                     if (setMode === 2) {
                         useIntegratedYaw.prop('checked', false).trigger('change');
@@ -2259,8 +2256,8 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else if (slider.is('#sliderFeedforwardGainLegacy')) {
                         TuningSliders.sliderFeedforwardGainLegacy = sliderValue;
                     }
+                    self.setDirty(true);
                 }
-
                 self.calculateNewPids();
                 self.analyticsChanges['PidTuningSliders'] = "On";
             });
@@ -2398,10 +2395,14 @@ TABS.pid_tuning.initialize = function (callback) {
                 if (TuningSliders.DTermSliderUnavailable) {
                     self.analyticsChanges['DTermFilterTuningSlider'] = "Off";
                 }
+                self.setDirty(true);
             });
 
             // update on filter switch changes
-            $('.pid_filter tr:not(.newFilter) .inputSwitch input').change(() => $('.pid_filter input').triggerHandler('input'));
+            $('.pid_filter tr:not(.newFilter) .inputSwitch input').change(() => {
+                $('.pid_filter input').triggerHandler('input');
+                self.setDirty(true);
+            });
 
             $('.tuningHelp').hide();
 
@@ -2469,6 +2470,7 @@ TABS.pid_tuning.initialize = function (callback) {
                 // update on pid table inputs
                 $('#pid_main input').on('input', function() {
                     TuningSliders.updatePidSlidersDisplay();
+                    self.setDirty(true);
                     self.analyticsChanges['PidTuningSliders'] = "Off";
                 });
             }
@@ -2500,9 +2502,6 @@ TABS.pid_tuning.initialize = function (callback) {
         $('a.update').click(function () {
             form_to_pid_and_rc();
             self.updating = true;
-
-            console.log('SAVING GYRO DYN MIN, DYN MAX, LP1, LP2', FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz, FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz, FC.FILTER_CONFIG.gyro_lowpass_hz, FC.FILTER_CONFIG.gyro_lowpass2_hz);
-            console.log('GYRO MODE', FC.TUNING_SLIDERS.slider_gyro_filter);
 
             Promise.resolve(true)
             .then(function () {

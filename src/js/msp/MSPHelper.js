@@ -379,6 +379,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                         FC.PIDS[i][j] = FC.PIDS_ACTIVE[i][j];
                     }
                 }
+                console.log('MSP_PID', FC.PIDS, FC.PIDS_ACTIVE);
                 break;
 
             case MSPCodes.MSP_ARMING_CONFIG:

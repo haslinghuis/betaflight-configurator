@@ -94,9 +94,9 @@ TABS.pid_tuning.initialize = function (callback) {
             const searchRow = $('.pid_tuning .' + elementPid + ' input');
 
             // Assign each value
-            searchRow.each(function (indexInput) {
+            searchRow.each((indexInput, element) => {
                 if (FC.PIDS[indexPid][indexInput] !== undefined) {
-                    $(this).val(FC.PIDS[indexPid][indexInput]);
+                    $(element).val(FC.PIDS_ACTIVE[indexPid][indexInput]);
                 }
             });
         });
@@ -2037,11 +2037,10 @@ TABS.pid_tuning.initialize = function (callback) {
             });
         });
 
-        // exclude integratedYaw from setDirty for 4.3 as it uses RP mode.
         $('#pid-tuning').find('input').each(function (k, item) {
             if ($(item).attr('class') !== "feature toggle"
                 && $(item).attr('class') !== "nonProfile"
-                && (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) && $(item).attr('id'))) {
+                ) {
                 $(item).change(function () {
                     self.setDirty(true);
                 });
@@ -2133,7 +2132,7 @@ TABS.pid_tuning.initialize = function (callback) {
             const NON_EXPERT_SLIDER_MAX = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 1.4 : 1.25;
             const NON_EXPERT_SLIDER_MIN = 0.7;
 
-            const SLIDER_STEP_LOWER = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 0.05 : 0.1;
+            const SLIDER_STEP_LOWER = 0.05;
             const SLIDER_STEP_UPPER = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 0.05 : 0.1;
 
             const sliderPidsModeSelect = $('#sliderPidsModeSelect');
@@ -2163,15 +2162,10 @@ TABS.pid_tuning.initialize = function (callback) {
                     TuningSliders.calculateNewPids();
                     TuningSliders.updatePidSlidersDisplay();
 
-                    const disableRP = !!setMode;
-                    const disableY = setMode > 1;
-
                     // disable Integrated Yaw when going into RPY mode
                     if (setMode === 2) {
                         useIntegratedYaw.prop('checked', false).trigger('change');
                     }
-
-                    self.setDirty(true);
                 });
 
                 sliderGyroFilterModeSelect.change(function() {
@@ -2182,8 +2176,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else {
                         TuningSliders.gyroFilterSliderDisable();
                     }
-
-                    self.setDirty(true);
                 });
 
                 sliderDTermFilterModeSelect.change(function() {
@@ -2194,8 +2186,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     } else {
                         TuningSliders.dtermFilterSliderDisable();
                     }
-
-                    self.setDirty(true);
                 });
             }
 
@@ -2229,9 +2219,8 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
 
-                const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
-
                 if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
                     if (slider.is('#sliderDGain')) {
                         TuningSliders.sliderDGain = sliderValue;
                     } else if (slider.is('#sliderPIGain')) {
@@ -2250,6 +2239,7 @@ TABS.pid_tuning.initialize = function (callback) {
                         TuningSliders.sliderMasterMultiplier = sliderValue;
                     }
                 } else {
+                    const sliderValue = TuningSliders.scaleSliderValue(slider.val());
                     if (slider.is('#sliderMasterMultiplierLegacy')) {
                         TuningSliders.sliderMasterMultiplierLegacy = sliderValue;
                     } else if (slider.is('#sliderPDRatio')) {
@@ -2309,7 +2299,6 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
                 slider.val(value);
-
                 self.calculateNewPids();
             });
 
@@ -2318,13 +2307,6 @@ TABS.pid_tuning.initialize = function (callback) {
             allFilterTuningSliders.on('input mouseup', function() {
                 const slider = $(this);
 
-                if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                    if (slider.val() >= 1) {
-                        slider.attr('step', SLIDER_STEP_LOWER);
-                    } else {
-                        slider.attr('step', SLIDER_STEP_UPPER);
-                    }
-                }
                 if (!TuningSliders.expertMode) {
                     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
                         const NON_EXPERT_SLIDER_MIN_GYRO = 0.5;
@@ -2354,7 +2336,11 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
 
-                const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
+                let sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
+                if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    sliderValue = TuningSliders.scaleSliderValue(slider.val());
+                }
+
                 if (slider.is('#sliderGyroFilterMultiplier')) {
                     TuningSliders.sliderGyroFilterMultiplier = sliderValue;
                     self.calculateNewGyroFilters();
@@ -2401,7 +2387,10 @@ TABS.pid_tuning.initialize = function (callback) {
             });
 
             // update on filter switch changes
-            $('.pid_filter tr:not(.newFilter) .inputSwitch input').change(() => $('.pid_filter input').triggerHandler('input'));
+            $('.pid_filter tr:not(.newFilter) .inputSwitch input').change(() => {
+                $('.pid_filter input').triggerHandler('input');
+                self.setDirty(true);
+            });
 
             $('.tuningHelp').hide();
 
@@ -2500,9 +2489,6 @@ TABS.pid_tuning.initialize = function (callback) {
         $('a.update').click(function () {
             form_to_pid_and_rc();
             self.updating = true;
-
-            console.log('SAVING GYRO DYN MIN, DYN MAX, LP1, LP2', FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz, FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz, FC.FILTER_CONFIG.gyro_lowpass_hz, FC.FILTER_CONFIG.gyro_lowpass2_hz);
-            console.log('GYRO MODE', FC.TUNING_SLIDERS.slider_gyro_filter);
 
             Promise.resolve(true)
             .then(function () {

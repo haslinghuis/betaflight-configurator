@@ -379,7 +379,6 @@ MspHelper.prototype.process_data = function(dataHandler) {
                         FC.PIDS[i][j] = FC.PIDS_ACTIVE[i][j];
                     }
                 }
-                console.log('MSP_PID', FC.PIDS, FC.PIDS_ACTIVE);
                 break;
 
             case MSPCodes.MSP_ARMING_CONFIG:
@@ -1550,12 +1549,6 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 FC.TUNING_SLIDERS.slider_gyro_valid = data.readU8();
                 FC.TUNING_SLIDERS.slider_dterm_valid = data.readU8();
 
-                break;
-            case MSPCodes.MSP_APPLY_PID_TUNING_SLIDERS:
-                break;
-            case MSPCodes.MSP_APPLY_GYRO_TUNING_SLIDERS:
-                break;
-            case MSPCodes.MSP_APPLY_DTERM_TUNING_SLIDERS:
                 break;
             case MSPCodes.MSP_SET_VTXTABLE_POWERLEVEL:
                 console.log("VTX powerlevel sent");

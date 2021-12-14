@@ -48,7 +48,6 @@ TuningSliders.setDMinFeatureEnabled = function(dMinFeatureEnabled) {
     } else {
         this.defaultPDRatio = this.PID_DEFAULT[2] / (this.PID_DEFAULT[0] * (1 / D_MIN_RATIO));
     }
-    console.log(this.sliderPDRatio, this.defaultPDRatio, this.PID_DEFAULT[2], this.PID_DEFAULT[0], 1 / D_MIN_RATIO);
 };
 
 TuningSliders.initialize = function() {
@@ -236,13 +235,13 @@ TuningSliders.initPidSlidersPosition = function() {
         // provides only an estimation due to limitation of feature without firmware support, to be improved in later versions
         this.sliderMasterMultiplierLegacy = Math.round(FC.PIDS_ACTIVE[2][1] / this.PID_DEFAULT[11] * 10) / 10;
         this.sliderPDRatio = Math.round(FC.PIDS_ACTIVE[0][2] / FC.PIDS_ACTIVE[0][0] / this.defaultPDRatio * 10) / 10;
-        console.log('sliderPDRatio', this.sliderPDRatio, FC.PIDS_ACTIVE[0][2], FC.PIDS_ACTIVE[0][0], this.defaultPDRatio);
+
         if (this.dMinFeatureEnabled) {
             this.sliderPDGain = Math.round(FC.ADVANCED_TUNING.dMinRoll / this.sliderPDRatio / this.sliderMasterMultiplierLegacy / this.PID_DEFAULT[3] * 10) / 10;
         } else {
             this.sliderPDGain = Math.round(FC.PIDS_ACTIVE[0][0] / this.sliderMasterMultiplierLegacy / (this.PID_DEFAULT[2] * (1 / D_MIN_RATIO)) * 10) / 10;
         }
-        console.log('sliderPDGain', this.sliderPDGain);
+
         this.sliderFeedforwardGainLegacy = Math.round(FC.ADVANCED_TUNING.feedforwardRoll / this.sliderMasterMultiplierLegacy / this.PID_DEFAULT[4] * 10) / 10;
 
         $('output[name="sliderMasterMultiplierLegacy-number"]').val(this.sliderMasterMultiplierLegacy);
@@ -611,19 +610,12 @@ TuningSliders.validateTuningSliders = function() {
     });
 };
 
-TuningSliders.writePids = function() {
-    MSP.promise(MSPCodes.MSP_APPLY_PID_TUNING_SLIDERS);
-};
+/*
+*
+* LEGACY SLIDERS CODE
+*
+*/
 
-TuningSliders.writeGyroLowpassFilters = function() {
-    MSP.promise(MSPCodes.MSP_APPLY_GYRO_TUNING_SLIDERS);
-};
-
-TuningSliders.writeDtermLowpassFilters = function() {
-    MSP.promise(MSPCodes.MSP_APPLY_DTERM_TUNING_SLIDERS);
-};
-
-// LEGACY SLIDERS CODE
 TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
     const MAX_PID_GAIN = 200;
     const MAX_DMIN_GAIN = 100;

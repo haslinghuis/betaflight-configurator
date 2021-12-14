@@ -610,8 +610,8 @@ TuningSliders.validateTuningSliders = function() {
         this.sliderDTermFilter = FC.TUNING_SLIDERS.slider_dterm_valid;
 
         FC.TUNING_SLIDERS.slider_pids_mode = FC.TUNING_SLIDERS.slider_pids_valid ? FC.TUNING_SLIDERS.slider_pids_mode : 0;
-        FC.TUNING_SLIDERS.slider_gyro_filter = FC.TUNING_SLIDERS.slider_gyro_valid;
-        FC.TUNING_SLIDERS.slider_dterm_filter = FC.TUNING_SLIDERS.slider_dterm_valid;
+        FC.TUNING_SLIDERS.slider_gyro_filter = FC.TUNING_SLIDERS.slider_gyro_valid ? FC.TUNING_SLIDERS.slider_gyro_filter : 0;
+        FC.TUNING_SLIDERS.slider_dterm_filter = FC.TUNING_SLIDERS.slider_dterm_valid ? FC.TUNING_SLIDERS.slider_dterm_filter : 0;
 
         $('#sliderPidsModeSelect').val(this.sliderPidsMode);
         $('#sliderGyroFilterModeSelect').val(this.sliderGyroFilter);

@@ -1507,13 +1507,14 @@ MspHelper.prototype.process_data = function(dataHandler) {
 
                 break;
             case MSPCodes.MSP_CALC_PID_TUNING_SLIDERS:
-                FC.PIDS[0][0] = data.readU8();
-                FC.PIDS[0][1] = data.readU8();
-                FC.PIDS[0][2] = data.readU8();
-                FC.ADVANCED_TUNING.dMinRoll = data.readU8();
-                FC.ADVANCED_TUNING.feedforwardRoll = data.readU16();
 
                 if (FC.TUNING_SLIDERS.slider_pids_mode > 0) {
+                    FC.PIDS[0][0] = data.readU8();
+                    FC.PIDS[0][1] = data.readU8();
+                    FC.PIDS[0][2] = data.readU8();
+                    FC.ADVANCED_TUNING.dMinRoll = data.readU8();
+                    FC.ADVANCED_TUNING.feedforwardRoll = data.readU16();
+
                     FC.PIDS[1][0] = data.readU8();
                     FC.PIDS[1][1] = data.readU8();
                     FC.PIDS[1][2] = data.readU8();

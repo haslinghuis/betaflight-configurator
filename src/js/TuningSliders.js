@@ -291,38 +291,6 @@ TuningSliders.initDTermFilterSliderPosition = function() {
     $('output[name="sliderDTermFilterMultiplier-number"]').val(this.sliderDTermFilterMultiplier);
 };
 
-TuningSliders.resetPidSliders = function() {
-    if (!this.cachedPidSliderValues) {
-        if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-            this.sliderDGain = this.SLIDER_DEFAULT.slider_d_gain / 100;
-            this.sliderPIGain = this.SLIDER_DEFAULT.slider_pi_gain / 100;
-            this.sliderFeedforwardGain = this.SLIDER_DEFAULT.slider_feedforward_gain / 100;
-            this.sliderDMaxGain = this.SLIDER_DEFAULT.slider_dmax_gain / 100;
-            this.sliderIGain = this.SLIDER_DEFAULT.slider_i_gain / 100;
-            this.sliderRollPitchRatio = this.SLIDER_DEFAULT.slider_roll_pitch_ratio / 100;
-            this.sliderPitchPIGain = this.SLIDER_DEFAULT.slider_pitch_pi_gain / 100;
-            this.sliderMasterMultiplier = this.SLIDER_DEFAULT.slider_master_multiplier / 100;
-        } else {
-            this.sliderMasterMultiplierLegacy = 1;
-            this.sliderPDRatio = 1;
-            this.sliderPDGain = 1;
-            this.sliderFeedforwardGainLegacy = 1;
-        }
-    }
-
-    if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-        this.calculateNewPids();
-        this.initPidSlidersPosition();
-        this.updatePidSlidersDisplay();
-    } else {
-        $('#sliderMasterMultiplierLegacy').val(this.downscaleSliderValue(this.sliderMasterMultiplierLegacy));
-        $('#sliderPDRatio').val(this.downscaleSliderValue(this.sliderPDRatio));
-        $('#sliderPDGain').val(this.downscaleSliderValue(this.sliderPDGain));
-        $('#sliderFeedforwardGainLegacy').val(this.downscaleSliderValue(this.sliderFeedforwardGainLegacy));
-        this.calculateNewPids();
-    }
-};
-
 TuningSliders.gyroFilterSliderEnable = function() {
     this.sliderGyroFilter = 1;
     this.calculateNewGyroFilters();
@@ -584,14 +552,15 @@ TuningSliders.calculateNewDTermFilters = function() {
 };
 
 TuningSliders.readSimplifiedPids = function(updateSlidersOnly = false) {
-    FC.TUNING_SLIDERS.slider_master_multiplier = this.sliderMasterMultiplier * 100;
-    FC.TUNING_SLIDERS.slider_roll_pitch_ratio = this.sliderRollPitchRatio * 100;
-    FC.TUNING_SLIDERS.slider_i_gain = this.sliderIGain * 100;
-    FC.TUNING_SLIDERS.slider_d_gain = this.sliderDGain * 100;
-    FC.TUNING_SLIDERS.slider_pi_gain = this.sliderPIGain * 100;
-    FC.TUNING_SLIDERS.slider_dmax_gain = this.sliderDMaxGain * 100;
-    FC.TUNING_SLIDERS.slider_feedforward_gain = this.sliderFeedforwardGain * 100;
-    FC.TUNING_SLIDERS.slider_pitch_pi_gain = this.sliderPitchPIGain * 100;
+    FC.TUNING_SLIDERS.slider_pids_mode = this.sliderPidsMode;
+    FC.TUNING_SLIDERS.slider_master_multiplier = Math.round(this.sliderMasterMultiplier * 100);
+    FC.TUNING_SLIDERS.slider_roll_pitch_ratio = Math.round(this.sliderRollPitchRatio * 100);
+    FC.TUNING_SLIDERS.slider_i_gain = Math.round(this.sliderIGain * 100);
+    FC.TUNING_SLIDERS.slider_d_gain = Math.round(this.sliderDGain * 100);
+    FC.TUNING_SLIDERS.slider_pi_gain = Math.round(this.sliderPIGain * 100);
+    FC.TUNING_SLIDERS.slider_dmax_gain = Math.round(this.sliderDMaxGain * 100);
+    FC.TUNING_SLIDERS.slider_feedforward_gain = Math.round(this.sliderFeedforwardGain * 100);
+    FC.TUNING_SLIDERS.slider_pitch_pi_gain = Math.round(this.sliderPitchPIGain * 100);
 
     MSP.promise(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS, mspHelper.crunch(MSPCodes.MSP_CALC_PID_TUNING_SLIDERS))
     .then(() => this.updateFormPids(updateSlidersOnly));
@@ -624,9 +593,7 @@ TuningSliders.readSimplifiedDTermFilters = function() {
 TuningSliders.validateTuningSliders = function() {
     MSP.promise(MSPCodes.MSP_VALIDATE_TUNING_SLIDERS)
     .then(() => {
-        console.log('Validate status', FC.TUNING_SLIDERS.slider_pids_valid, FC.TUNING_SLIDERS.slider_gyro_valid, FC.TUNING_SLIDERS.slider_dterm_valid);
-
-        this.sliderPidsMode = FC.TUNING_SLIDERS.slider_pids_valid ? FC.TUNING_SLIDERS.slider_pids_mode : 0;
+        this.sliderPidsMode = FC.TUNING_SLIDERS.slider_pids_valid > 0 ? FC.TUNING_SLIDERS.slider_pids_mode : 0;
         this.sliderGyroFilter = FC.TUNING_SLIDERS.slider_gyro_valid;
         this.sliderDTermFilter = FC.TUNING_SLIDERS.slider_dterm_valid;
 
@@ -787,6 +754,21 @@ TuningSliders.legacyUpdateFilterSlidersDisplay = function() {
 
     $('.tuningFilterSliders').toggle(!(this.GyroSliderUnavailable && this.DTermSliderUnavailable));
     $('.subtab-filter .slidersDisabled').toggle(this.GyroSliderUnavailable || this.DTermSliderUnavailable);
+};
+
+TuningSliders.resetPidSliders = function() {
+    if (!this.cachedPidSliderValues) {
+        this.sliderMasterMultiplierLegacy = 1;
+        this.sliderPDRatio = 1;
+        this.sliderPDGain = 1;
+        this.sliderFeedforwardGainLegacy = 1;
+    }
+
+    $('#sliderMasterMultiplierLegacy').val(this.downscaleSliderValue(this.sliderMasterMultiplierLegacy));
+    $('#sliderPDRatio').val(this.downscaleSliderValue(this.sliderPDRatio));
+    $('#sliderPDGain').val(this.downscaleSliderValue(this.sliderPDGain));
+    $('#sliderFeedforwardGainLegacy').val(this.downscaleSliderValue(this.sliderFeedforwardGainLegacy));
+    this.calculateNewPids();
 };
 
 TuningSliders.resetGyroFilterSlider = function() {

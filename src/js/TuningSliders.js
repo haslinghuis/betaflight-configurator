@@ -44,9 +44,9 @@ const D_MIN_RATIO = 0.85;
 TuningSliders.setDMinFeatureEnabled = function(dMinFeatureEnabled) {
     this.dMinFeatureEnabled = dMinFeatureEnabled;
     if (this.dMinFeatureEnabled) {
-        this.defaultPDRatio = Math.round(this.PID_DEFAULT[2] / this.PID_DEFAULT[0]);
+        this.defaultPDRatio = this.PID_DEFAULT[2] / this.PID_DEFAULT[0];
     } else {
-        this.defaultPDRatio = Math.round(this.PID_DEFAULT[2] / (this.PID_DEFAULT[0] * (1 / D_MIN_RATIO)));
+        this.defaultPDRatio = this.PID_DEFAULT[2] / (this.PID_DEFAULT[0] * (1 / D_MIN_RATIO));
     }
     console.log(this.sliderPDRatio, this.defaultPDRatio, this.PID_DEFAULT[2], this.PID_DEFAULT[0], 1 / D_MIN_RATIO);
 };
@@ -58,16 +58,16 @@ TuningSliders.initialize = function() {
 
     this.setExpertMode(isExpertModeEnabled());
 
-    this.initPidSlidersPosition();
-    this.initGyroFilterSliderPosition();
-    this.initDTermFilterSliderPosition();
-
     // after refresh cached values are not available
     this.cachedPidSliderValues = false;
     this.cachedGyroSliderValues = false;
     this.cachedDTermSliderValues = false;
 
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+        this.initPidSlidersPosition();
+        this.initGyroFilterSliderPosition();
+        this.initDTermFilterSliderPosition();
+
         // If reading manual values while sliders are on we set the sliders off
         this.validateTuningSliders();
 
@@ -81,6 +81,10 @@ TuningSliders.initialize = function() {
         $('.subtab-filter .slidersDisabled').hide();
     } else {
         this.setDMinFeatureEnabled($('#dMinSwitch').is(':checked'));
+
+        this.initPidSlidersPosition();
+        this.initGyroFilterSliderPosition();
+        this.initDTermFilterSliderPosition();
 
         if (this.dMinFeatureEnabled) {
             FC.ADVANCED_TUNING.dMinRoll = FC.PIDS_ACTIVE[0][2];
@@ -688,7 +692,7 @@ TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
     //master slider multiplication, max value 200 for main PID values
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            FC.PIDS[j][i] = Math.min(Math.round(FC.PIDS_ACTIVE[j][i] * this.sliderMasterMultiplierLegacy), MAX_PID_GAIN);
+            FC.PIDS[j][i] = Math.min(Math.round(FC.PIDS[j][i] * this.sliderMasterMultiplierLegacy), MAX_PID_GAIN);
         }
     }
 

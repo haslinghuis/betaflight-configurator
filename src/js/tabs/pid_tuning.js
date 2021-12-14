@@ -2133,7 +2133,7 @@ TABS.pid_tuning.initialize = function (callback) {
             const NON_EXPERT_SLIDER_MAX = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 1.4 : 1.25;
             const NON_EXPERT_SLIDER_MIN = 0.7;
 
-            const SLIDER_STEP_LOWER = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 0.05 : 0.1;
+            const SLIDER_STEP_LOWER = 0.05;
             const SLIDER_STEP_UPPER = semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44) ? 0.05 : 0.1;
 
             const sliderPidsModeSelect = $('#sliderPidsModeSelect');
@@ -2226,9 +2226,8 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
 
-                const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
-
                 if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
                     if (slider.is('#sliderDGain')) {
                         TuningSliders.sliderDGain = sliderValue;
                     } else if (slider.is('#sliderPIGain')) {
@@ -2247,6 +2246,7 @@ TABS.pid_tuning.initialize = function (callback) {
                         TuningSliders.sliderMasterMultiplier = sliderValue;
                     }
                 } else {
+                    const sliderValue = TuningSliders.scaleSliderValue(slider.val());
                     if (slider.is('#sliderMasterMultiplierLegacy')) {
                         TuningSliders.sliderMasterMultiplierLegacy = sliderValue;
                     } else if (slider.is('#sliderPDRatio')) {
@@ -2315,13 +2315,6 @@ TABS.pid_tuning.initialize = function (callback) {
             allFilterTuningSliders.on('input mouseup', function() {
                 const slider = $(this);
 
-                if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                    if (slider.val() >= 1) {
-                        slider.attr('step', SLIDER_STEP_LOWER);
-                    } else {
-                        slider.attr('step', SLIDER_STEP_UPPER);
-                    }
-                }
                 if (!TuningSliders.expertMode) {
                     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
                         const NON_EXPERT_SLIDER_MIN_GYRO = 0.5;
@@ -2351,7 +2344,11 @@ TABS.pid_tuning.initialize = function (callback) {
                     }
                 }
 
-                const sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
+                let sliderValue = isInt(slider.val()) ? parseInt(slider.val()) : parseFloat(slider.val());
+                if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+                    sliderValue = TuningSliders.scaleSliderValue(slider.val());
+                }
+
                 if (slider.is('#sliderGyroFilterMultiplier')) {
                     TuningSliders.sliderGyroFilterMultiplier = sliderValue;
                     self.calculateNewGyroFilters();

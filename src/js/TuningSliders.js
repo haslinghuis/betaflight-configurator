@@ -80,6 +80,8 @@ TuningSliders.initialize = function() {
         $('.subtab-pid .slidersDisabled').hide();
         $('.subtab-filter .slidersDisabled').hide();
     } else {
+        $('#sliderGyroFilterMultiplier, #sliderDTermFilterMultiplier').attr("min", "0.5");
+        $('#sliderGyroFilterMultiplier, #sliderDTermFilterMultiplier').attr("max", "1.5");
         this.setDMinFeatureEnabled($('#dMinSwitch').is(':checked'));
 
         this.initPidSlidersPosition();
@@ -185,7 +187,7 @@ TuningSliders.setExpertMode = function(expertModeEnabled) {
 
 TuningSliders.scaleSliderValue = function(value) {
     if (value > 1) {
-        return Math.round(((value - 1) * 2 + 1) * 100) / 100;
+        return Math.round(((value - 1) * 2 + 1) * 10) / 10;
     } else {
         return value;
     }
@@ -259,15 +261,16 @@ TuningSliders.initGyroFilterSliderPosition = function() {
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         this.sliderGyroFilter = FC.TUNING_SLIDERS.slider_gyro_filter;
         this.sliderGyroFilterMultiplier = FC.TUNING_SLIDERS.slider_gyro_filter_multiplier / 100;
+        $('#sliderGyroFilterMultiplier').val(this.sliderGyroFilterMultiplier);
     } else {
         this.sliderGyroFilterMultiplier =
-            Math.floor(
-                (FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz + FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz + FC.FILTER_CONFIG.gyro_lowpass_hz + FC.FILTER_CONFIG.gyro_lowpass2_hz) /
-                (this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz + this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz + this.FILTER_DEFAULT.gyro_lowpass_hz +
+            Math.round(
+                (FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz + FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz + FC.FILTER_CONFIG.gyro_lowpass2_hz) /
+                (this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz + this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz +
                 this.FILTER_DEFAULT.gyro_lowpass2_hz) * 100) / 100;
+        $('#sliderGyroFilterMultiplier').val(this.downscaleSliderValue(this.sliderGyroFilterMultiplier));
     }
 
-    $('#sliderGyroFilterMultiplier').val(this.sliderGyroFilterMultiplier);
     $('output[name="sliderGyroFilterMultiplier-number"]').val(this.sliderGyroFilterMultiplier);
 };
 
@@ -275,15 +278,16 @@ TuningSliders.initDTermFilterSliderPosition = function() {
     if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
         this.sliderDTermFilter = FC.TUNING_SLIDERS.slider_dterm_filter;
         this.sliderDTermFilterMultiplier = FC.TUNING_SLIDERS.slider_dterm_filter_multiplier / 100;
+        $('#sliderDTermFilterMultiplier').val(this.sliderDTermFilterMultiplier);
     } else {
         this.sliderDTermFilterMultiplier =
-            Math.floor(
-                (FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz + FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz + FC.FILTER_CONFIG.dterm_lowpass_hz + FC.FILTER_CONFIG.dterm_lowpass2_hz) /
-                (this.FILTER_DEFAULT.dterm_lowpass_dyn_min_hz + this.FILTER_DEFAULT.dterm_lowpass_dyn_max_hz + this.FILTER_DEFAULT.dterm_lowpass_hz +
+            Math.round(
+                (FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz + FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz + FC.FILTER_CONFIG.dterm_lowpass2_hz) /
+                (this.FILTER_DEFAULT.dterm_lowpass_dyn_min_hz + this.FILTER_DEFAULT.dterm_lowpass_dyn_max_hz +
                 this.FILTER_DEFAULT.dterm_lowpass2_hz) * 100) / 100;
+        $('#sliderDTermFilterMultiplier').val(this.downscaleSliderValue(this.sliderDTermFilterMultiplier));
     }
 
-    $('#sliderDTermFilterMultiplier').val(this.sliderDTermFilterMultiplier);
     $('output[name="sliderDTermFilterMultiplier-number"]').val(this.sliderDTermFilterMultiplier);
 };
 
@@ -713,10 +717,9 @@ TuningSliders.legacyCalculatePids = function(updateSlidersOnly = false) {
 
 TuningSliders.calculateLegacyGyroFilters = function() {
     // calculate, set and display new values in forms based on slider position
-    FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz = Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier);
-    FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz = Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz * this.sliderGyroFilterMultiplier);
-    FC.FILTER_CONFIG.gyro_lowpass_hz = Math.floor(this.FILTER_DEFAULT.gyro_lowpass_hz * this.sliderGyroFilterMultiplier);
-    FC.FILTER_CONFIG.gyro_lowpass2_hz = Math.floor(this.FILTER_DEFAULT.gyro_lowpass2_hz * this.sliderGyroFilterMultiplier);
+    FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz = Math.round(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier);
+    FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz = Math.round(this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz * this.sliderGyroFilterMultiplier);
+    FC.FILTER_CONFIG.gyro_lowpass2_hz = Math.round(this.FILTER_DEFAULT.gyro_lowpass2_hz * this.sliderGyroFilterMultiplier);
     FC.FILTER_CONFIG.gyro_lowpass_type = this.FILTER_DEFAULT.gyro_lowpass_type;
     FC.FILTER_CONFIG.gyro_lowpass2_type = this.FILTER_DEFAULT.gyro_lowpass2_type;
 
@@ -724,6 +727,7 @@ TuningSliders.calculateLegacyGyroFilters = function() {
     $('.pid_filter input[name="gyroLowpassDynMaxFrequency"]').val(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz);
     $('.pid_filter input[name="gyroLowpassFrequency"]').val(FC.FILTER_CONFIG.gyro_lowpass_hz);
     $('.pid_filter input[name="gyroLowpass2Frequency"]').val(FC.FILTER_CONFIG.gyro_lowpass2_hz);
+    $('output[name="sliderGyroFilterMultiplier-number"]').val(this.sliderGyroFilterMultiplier);
 
     this.updateFilterSlidersWarning();
 };
@@ -741,6 +745,7 @@ TuningSliders.calculateLegacyDTermFilters = function() {
     $('.pid_filter input[name="dtermLowpassDynMaxFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz);
     $('.pid_filter input[name="dtermLowpassFrequency"]').val(FC.FILTER_CONFIG.dterm_lowpass_hz);
     $('.pid_filter input[name="dtermLowpass2Frequency"]').val(FC.FILTER_CONFIG.dterm_lowpass2_hz);
+    $('output[name="sliderDTermFilterMultiplier-number"]').val(this.sliderDTermFilterMultiplier);
 
     this.updateFilterSlidersWarning();
 };
@@ -750,14 +755,12 @@ TuningSliders.legacyUpdateFilterSlidersDisplay = function() {
     this.DTermSliderUnavailable = false;
 
     if (parseInt($('.pid_filter input[name="gyroLowpassDynMinFrequency"]').val()) !==
-            Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier) ||
+            Math.round(this.FILTER_DEFAULT.gyro_lowpass_dyn_min_hz * this.sliderGyroFilterMultiplier) ||
         parseInt($('.pid_filter input[name="gyroLowpassDynMaxFrequency"]').val()) !==
-            Math.floor(this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz * this.sliderGyroFilterMultiplier) ||
+            Math.round(this.FILTER_DEFAULT.gyro_lowpass_dyn_max_hz * this.sliderGyroFilterMultiplier) ||
         parseInt($('.pid_filter select[name="gyroLowpassDynType"]').val()) !== this.FILTER_DEFAULT.gyro_lowpass_type ||
-        parseInt($('.pid_filter input[name="gyroLowpassFrequency"]').val()) !==
-            Math.floor(this.FILTER_DEFAULT.gyro_lowpass_hz * this.sliderGyroFilterMultiplier) ||
         parseInt($('.pid_filter input[name="gyroLowpass2Frequency"]').val()) !==
-            Math.floor(this.FILTER_DEFAULT.gyro_lowpass2_hz * this.sliderGyroFilterMultiplier) ||
+            Math.round(this.FILTER_DEFAULT.gyro_lowpass2_hz * this.sliderGyroFilterMultiplier) ||
         parseInt($('.pid_filter select[name="gyroLowpass2Type"]').val()) !== this.FILTER_DEFAULT.gyro_lowpass2_type) {
         this.GyroSliderUnavailable = true;
     } else {

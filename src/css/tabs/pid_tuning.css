@@ -258,10 +258,6 @@
     background-color: #f9f9f9;
 }
 
-.tab-pid_tuning .subtab-pid table input:disabled {
-    background-color: #dddddd;
-}
-
 .tab-pid_tuning .subtab-filter table input,
 .tab-pid_tuning .subtab-filter table select {
     width: 77px;

@@ -891,26 +891,65 @@ TABS.pid_tuning.initialize = function (callback) {
 
         } else {
 
+/*
+            0    0000 = off
+            1    0001 = on
+            2    0010 = lp1 dynamic
+            4    0100 = lp1 static
+            8    1000 = lp2 static
+
+
+            3    0011 = lp1 dyn
+            5    0101 = lp1 stat
+            11   1011 = lp1 dyn + lp2 stat
+            13   1101 = lp1 stat + lp2 stat
+            9    1001 = lp2 stat
+
+                // get a bit mask:
+                let mask = 1 << 5 // gets 6th bit
+                if ((n & mask) !== 0} {
+                    // bit is set
+                }
+                // set a bit:
+                n |= mask;
+                // clear a bit:
+                n &= ~mask
+                // toggle a bit
+                n ^= mask
+
+*/
+            function getGyroFilterMode(dynamic, static1, static2) {
+                let mode = FC.TUNING_SLIDERS.slider_gyro_filter << 0;
+                mode = dynamic << 1;
+                mode = static1 << 2;
+                mode = static2 << 3;
+                return mode;
+            }
+
             // firmware 4.3 filter selectors for lowpass 1 and 2; sliders are not yet initialized here
             gyroLowpassEnabled.change(function() {
                 const checked = $(this).is(':checked');
 
                 if (FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz > 0 || FC.FILTER_CONFIG.gyro_lowpass_hz > 0) {
                     // lowpass1 is enabled, set the master switch on, show the label, mode selector and type fields
+
                     if (checked) {
-                        gyroLowpassFilterMode.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz > 0 ? 1 : 0).change();
+                        // gyroLowpassFilterMode.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz > 0 ? 1 : 0).change();
+                        gyroLowpassFilterMode.val(getGyroFilterMode).change();
                     } else {
                         // the user is disabling Lowpass 1 so set everything to zero
-                        gyroLowpassDynMinFrequency.val(0);
-                        gyroLowpassDynMaxFrequency.val(0);
-                        gyroLowpassFrequency.val(0);
+                        gyroLowpassFilterMode.val(1).change();
+                        // gyroLowpassDynMinFrequency.val(0);
+                        // gyroLowpassDynMaxFrequency.val(0);
+                        // gyroLowpassFrequency.val(0);
                     }
                 } else {
                     // lowpass 1 is disabled, set the master switch off, only show label
                     if (checked) {
                         // user is trying to enable the lowpass filter, but it was off (both cutoffs are zero)
                         // initialise in dynamic mode with values at sliders, or use defaults
-                        gyroLowpassFilterMode.val(1).change();
+                        // gyroLowpassFilterMode.val(1).change();
+                        gyroLowpassFilterMode.val(11).change();
                     }
                 }
 

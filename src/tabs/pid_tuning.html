@@ -1218,17 +1218,6 @@
                         <table class="pid_titlebar new_rates">
                             <tr>
                                 <th i18n="pidTuningNonProfileFilterSettings"></th>
-                                <td>
-                                    <select id="sliderGyroFilterModeSelect" class="sliderMode">
-                                        <option value="0" i18n="pidTuningOptionOff"></option>
-                                        <!-- <option value="1" i18n="pidTuningOptionOn"></option> -->
-                                        <option value="1">DS</option>
-                                        <option value="2">SS</option>
-                                        <option value="3">D-</option>
-                                        <option value="4">S-</option>
-                                        <option value="5">-S</option>
-                                    </select>    
-                                </td>
                             </tr>
                         </table>
 
@@ -1237,6 +1226,10 @@
                                 <th colspan="2">
                                     <div class="pid_mode">
                                         <div i18n="pidTuningGyroLowpassFiltersGroup" ></div>
+                                        <select id="sliderGyroFilterModeSelect" class="sliderMode">
+                                            <option value="0" i18n="pidTuningOptionOff"></option>
+                                            <option value="1" i18n="pidTuningOptionOn"></option>
+                                        </select>    
                                         <div class="helpicon cf_tip" i18n_title="pidTuningGyroLowpassFilterHelp"></div>
                                     </div>
                                 </th>
@@ -1530,12 +1523,6 @@
                         <table class="pid_titlebar new_rates">
                             <tr>
                                 <th i18n="pidTuningFilterSettings"></th>
-                                <td>
-                                    <select id="sliderDTermFilterModeSelect" class="sliderMode">
-                                        <option value="0" i18n="pidTuningOptionOff"></option>
-                                        <option value="1" i18n="pidTuningOptionOn"></option>
-                                    </select>    
-                                </td>
                             </tr>
                         </table>
 
@@ -1544,6 +1531,10 @@
                                 <th colspan="3">
                                     <div class="pid_mode">
                                         <div i18n="pidTuningDTermLowpassFiltersGroup" ></div>
+                                        <select id="sliderDTermFilterModeSelect" class="sliderMode">
+                                            <option value="0" i18n="pidTuningOptionOff"></option>
+                                            <option value="1" i18n="pidTuningOptionOn"></option>
+                                        </select>    
                                         <div class="helpicon cf_tip" i18n_title="pidTuningDTermLowpassFilterHelp"></div>
                                     </div>
                                 </th>

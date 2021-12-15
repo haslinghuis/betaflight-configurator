@@ -595,9 +595,6 @@ TABS.pid_tuning.initialize = function (callback) {
         $('input[id="useIntegratedYaw"]').change(function() {
             const checked = $(this).is(':checked');
             // 4.3 firmware has RP mode.
-            if (semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
-                $('#pid_main .pid_data input').prop('disabled', !checked);
-            }
             $('#pidTuningIntegratedYawCaution').toggle(checked);
         }).change();
 
@@ -688,6 +685,7 @@ TABS.pid_tuning.initialize = function (callback) {
 
                 dMinSwitch.on('change', function() {
                     const checked = $(this).is(':checked');
+
                     if (checked) {
                         if ($('.pid_tuning input[name="dMinRoll"]').val() == 0 && $('.pid_tuning input[name="dMinPitch"]').val() == 0 && $('.pid_tuning input[name="dMinYaw"]').val() == 0) {
                             // when enabling dmin set its value based on 0.57x of actual dmax, dmin is limited to 100
@@ -719,8 +717,7 @@ TABS.pid_tuning.initialize = function (callback) {
                         $('.pid_tuning input[name="dMinPitch"]').val(0);
                         $('.pid_tuning input[name="dMinYaw"]').val(0);
                     }
-                });
-                dMinSwitch.trigger('change');
+                }).trigger('change');
             }
         }
 
@@ -2038,9 +2035,7 @@ TABS.pid_tuning.initialize = function (callback) {
         });
 
         $('#pid-tuning').find('input').each(function (k, item) {
-            if ($(item).attr('class') !== "feature toggle"
-                && $(item).attr('class') !== "nonProfile"
-                ) {
+            if ($(item).attr('class') !== "feature toggle" && $(item).attr('class') !== "nonProfile") {
                 $(item).change(function () {
                     self.setDirty(true);
                 });
@@ -2155,10 +2150,12 @@ TABS.pid_tuning.initialize = function (callback) {
 
             // trigger Slider Display update when PID / Filter mode is changed
             if (semver.gte(FC.CONFIG.apiVersion, API_VERSION_1_44)) {
+
                 sliderPidsModeSelect.on('change', function () {
                     const setMode = parseInt($(this).val());
 
                     TuningSliders.sliderPidsMode = setMode;
+
                     TuningSliders.calculateNewPids();
                     TuningSliders.updatePidSlidersDisplay();
 
@@ -2463,6 +2460,7 @@ TABS.pid_tuning.initialize = function (callback) {
             }
 
         } else {
+            // semver.lt API_VERSION_1_42
             $('.tuningPIDSliders').hide();
             $('.tuningFilterSliders').hide();
             $('.slidersDisabled').hide();

@@ -100,9 +100,6 @@ TuningSliders.initialize = function() {
         this.updatePidSlidersDisplay();
         this.updateFilterSlidersDisplay();
 
-        $('#pid_main .ROLL .pid_data input, #pid_main .PITCH .pid_data input').each((_, el) => $(el).prop('disabled', false));
-        $('#pid_main .YAW .pid_data input').each((_, el) => $(el).prop('disabled', false));
-
         $('select[id="sliderGyroFilterModeSelect"]').hide();
         $('select[id="sliderDTermFilterModeSelect"]').hide();
     }
@@ -406,16 +403,15 @@ TuningSliders.updateGyroFilterSliderDisplay = function() {
         this.GyroSliderUnavailable = true;
         this.sliderGyroFilter = 0;
     } else {
-        FC.TUNING_SLIDERS.slider_gyro_filter = 1;
         this.GyroSliderUnavailable = false;
         this.sliderGyroFilter = 1;
         this.cachedGyroSliderValues = true;
     }
 
-    gyroLowpassDynMinFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz).prop('disabled', TuningSliders.sliderGyroFilter);
-    gyroLowpassDynMaxFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz).prop('disabled', TuningSliders.sliderGyroFilter);
-    gyroLowpassFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_hz).prop('disabled', TuningSliders.sliderGyroFilter);
-    gyroLowpass2Frequency.val(FC.FILTER_CONFIG.gyro_lowpass2_hz).prop('disabled', TuningSliders.sliderGyroFilter);
+    gyroLowpassDynMinFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz).prop('disabled', this.sliderGyroFilter);
+    gyroLowpassDynMaxFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_max_hz).prop('disabled', this.sliderGyroFilter);
+    gyroLowpassFrequency.val(FC.FILTER_CONFIG.gyro_lowpass_hz).prop('disabled', this.sliderGyroFilter);
+    gyroLowpass2Frequency.val(FC.FILTER_CONFIG.gyro_lowpass2_hz).prop('disabled', this.sliderGyroFilter);
 
     $('output[name="sliderGyroFilterMultiplier-number"]').val(this.sliderGyroFilterMultiplier);
 
@@ -442,10 +438,10 @@ TuningSliders.updateDTermFilterSliderDisplay = function() {
         this.cachedDTermSliderValues = true;
     }
 
-    dtermLowpassDynMinFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz).prop('disabled', TuningSliders.sliderDTermFilter);
-    dtermLowpassDynMaxFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz).prop('disabled', TuningSliders.sliderDTermFilter);
-    dtermLowpassFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_hz).prop('disabled', TuningSliders.sliderDTermFilter);
-    dtermLowpass2Frequency.val(FC.FILTER_CONFIG.dterm_lowpass2_hz).prop('disabled', TuningSliders.sliderDTermFilter);
+    dtermLowpassDynMinFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_dyn_min_hz).prop('disabled', this.sliderDTermFilter);
+    dtermLowpassDynMaxFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_dyn_max_hz).prop('disabled', this.sliderDTermFilter);
+    dtermLowpassFrequency.val(FC.FILTER_CONFIG.dterm_lowpass_hz).prop('disabled', this.sliderDTermFilter);
+    dtermLowpass2Frequency.val(FC.FILTER_CONFIG.dterm_lowpass2_hz).prop('disabled', this.sliderDTermFilter);
 
     $('output[name="sliderDTermFilterMultiplier-number"]').val(this.sliderDTermFilterMultiplier);
 

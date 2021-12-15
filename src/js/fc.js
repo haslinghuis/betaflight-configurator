@@ -891,9 +891,6 @@ const FC = {
     },
 
     getSliderDefaults() {
-        const sliderDefaults = this.DEFAULT_TUNING_SLIDERS;
-        // change slider defaults here
-
-        return sliderDefaults;
+        return this.DEFAULT_TUNING_SLIDERS;
     },
 };

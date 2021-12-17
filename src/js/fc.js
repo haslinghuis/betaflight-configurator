@@ -674,6 +674,7 @@ const FC = {
             slider_i_gain:                      0,
             slider_roll_pitch_ratio:            0,
             slider_pitch_pi_gain:               0,
+
             slider_pids_valid:                  0,
             slider_gyro_valid:                  0,
             slider_dterm_valid:                 0,

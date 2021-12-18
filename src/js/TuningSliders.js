@@ -432,7 +432,6 @@ TuningSliders.updateDTermFilterSliderDisplay = function() {
         this.DTermSliderUnavailable = true;
         this.sliderDTermFilter = 0;
     } else {
-        FC.TUNING_SLIDERS.slider_dterm_filter = 1;
         this.DTermSliderUnavailable = false;
         this.sliderDTermFilter = 1;
         this.cachedDTermSliderValues = true;

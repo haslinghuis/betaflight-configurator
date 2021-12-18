@@ -902,7 +902,6 @@ TABS.pid_tuning.initialize = function (callback) {
                         gyroLowpassFilterMode.val(FC.FILTER_CONFIG.gyro_lowpass_dyn_min_hz > 0 ? 1 : 0).change();
                     } else {
                         // the user is disabling Lowpass 1 so set everything to zero
-                        gyroLowpassFilterMode.val(1).change();
                         gyroLowpassDynMinFrequency.val(0);
                         gyroLowpassDynMaxFrequency.val(0);
                         gyroLowpassFrequency.val(0);

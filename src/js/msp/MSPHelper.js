@@ -2359,7 +2359,6 @@ MspHelper.prototype.crunch = function(code) {
 
         case MSPCodes.MSP_SET_TUNING_SLIDERS:
             buffer
-            .push8(0) // set sliders values, don't apply
             .push8(FC.TUNING_SLIDERS.slider_pids_mode)
             .push8(FC.TUNING_SLIDERS.slider_master_multiplier)
             .push8(FC.TUNING_SLIDERS.slider_roll_pitch_ratio)

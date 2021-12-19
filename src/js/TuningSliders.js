@@ -148,7 +148,7 @@ TuningSliders.updateExpertModeSlidersDisplay = function() {
     $('.baseSliderPIGain').toggleClass('disabledSliders', piGain && !this.expertMode);
     $('.baseSliderFeedforwardGain').toggleClass('disabledSliders', ffGain && !this.expertMode);
 
-    $('.advancedSlider').toggleClass('disabledSliders', !this.expertMode);
+    $('.advancedSlider').toggleClass('disabledSliders', !this.sliderPidsMode || !this.expertMode);
 
     $('.advancedSliderDmaxGain').toggle(dMaxGain || this.expertMode);
     $('.advancedSliderIGain').toggle(iGain || this.expertMode);
@@ -348,7 +348,7 @@ TuningSliders.updatePidSlidersDisplay = function() {
         $('#pid_main .YAW .pid_data input').each((_, el) => $(el).prop('disabled', this.sliderPidsMode === 2));
 
         $('.baseSlider').toggleClass('disabledSliders', !this.sliderPidsMode);
-        $('.advancedSlider').toggleClass('disabledSliders', !this.sliderPidsMode);
+        $('.advancedSlider').toggleClass('disabledSliders', !this.sliderPidsMode || !this.expertMode);
 
         $('#sliderDGain').prop('disabled', !this.sliderPidsMode);
         $('#sliderPIGain').prop('disabled', !this.sliderPidsMode);

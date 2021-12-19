@@ -992,7 +992,7 @@ TABS.pid_tuning.initialize = function (callback) {
                 dtermLowpassDynMinFrequency.val(dynMode ? cutoffMin : 0);
                 dtermLowpassDynMaxFrequency.val(dynMode ? cutoffMax : 0);
 
-                if (TuningSliders.sliderDtermFilter) {
+                if (TuningSliders.sliderDTermFilter) {
                     self.calculateNewDTermFilters();
                 }
 

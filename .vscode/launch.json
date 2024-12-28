@@ -4,6 +4,25 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+        [{
+            "resource": "/workspaces/betaflight-configurator/.vscode/launch.json",
+            "owner": "_generated_diagnostic_collection_name_#1",
+            "code": "2",
+            "severity": 4,
+            "message": "Please use type chrome instead",
+            "startLineNumber": 15,
+            "startColumn": 13,
+            "endLineNumber": 15,
+            "endColumn": 27
+        }]
+        {
+            "name": "Attach to Chrome",
+            "port": 9222,
+            "request": "attach",
+            "type": "chrome",
+            "webRoot": "${workspaceFolder}"
+        },
         {
             "type": "nwjs",
             "request": "attach",

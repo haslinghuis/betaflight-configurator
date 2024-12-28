@@ -1,10 +1,10 @@
 {
   "name": "betaflight-configurator",
-  "productName": "Betaflight",
-  "displayName": "Betaflight - Configuration and management tool",
-  "description": "Crossplatform configuration and management tool for the Betaflight flight control firmware.",
-  "version": "11.0.0",
-  "main": "index.html",
+  "productName": "Betaflight Configurator",
+  "displayName": "Betaflight - Configurator",
+  "description": "Crossplatform configuration tool for Betaflight flight control system.",
+  "version": "10.10.1",
+  "main": "main.html",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

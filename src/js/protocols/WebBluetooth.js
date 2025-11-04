@@ -27,7 +27,6 @@ class WebBluetooth extends EventTarget {
         this.bytesReceived = 0;
         this.failed = 0;
 
-        this.portCounter = 0;
         this.devices = [];
         this.device = null;
 
@@ -82,7 +81,7 @@ class WebBluetooth extends EventTarget {
 
     createPort(device) {
         return {
-            path: `bluetooth_${this.portCounter++}`,
+            path: `bluetooth`,
             displayName: device.name,
             vendorId: "unknown",
             productId: device.id,

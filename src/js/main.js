@@ -311,7 +311,7 @@ async function startProcess() {
                     mountVueTab("auxiliary", content_ready);
                     break;
                 case "adjustments":
-                    import("./tabs/adjustments").then(({ adjustments }) => adjustments.initialize(content_ready));
+                    mountVueTab("adjustments", content_ready);
                     break;
                 case "ports":
                     mountVueTab("ports", content_ready);
@@ -360,7 +360,7 @@ async function startProcess() {
                     import("./tabs/motors").then(({ motors }) => motors.initialize(content_ready));
                     break;
                 case "sensors":
-                    import("./tabs/sensors").then(({ sensors }) => sensors.initialize(content_ready));
+                    mountVueTab("sensors", content_ready);
                     break;
                 case "logging":
                     mountVueTab("logging", content_ready);

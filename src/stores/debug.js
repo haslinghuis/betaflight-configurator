@@ -859,6 +859,15 @@ export const useDebugStore = defineStore("debug", () => {
                 "debug[7]": "Notch 7 Center Freq [dbg-axis]",
             };
 
+            result.ACCELEROMETER = {
+                "debug[all]": "Debug Accel.",
+                "debug[0]": "Accel. Raw [X]",
+                "debug[1]": "Accel. Raw [Y]",
+                "debug[2]": "Accel. Raw [Z]",
+                "debug[3]": "Jerk [axis]",
+                "debug[4]": "Jerk Magnitude",
+            };
+
             result.AUTOPILOT_ALTITUDE = {
                 "debug[all]": "Autopilot Altitude",
                 "debug[0]": "Autopilot Throttle",

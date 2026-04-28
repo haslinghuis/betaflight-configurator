@@ -478,9 +478,26 @@
         <div class="content_toolbar toolbar_fixed_bottom">
             <UButton :label="$t('receiverButtonSticks')" @click="openSticksWindow" v-if="showSticksButton" />
             <UButton :label="$t('receiverButtonBind')" @click="sendBind" v-if="showBindButton" />
-            <UButton :label="$t('receiverButtonRefresh')" @click="refreshTab" />
-            <UButton :label="$t('receiverButtonSave')" @click="saveConfig(false)" v-if="!needReboot" />
-            <UButton :label="$t('receiverButtonSave')" @click="saveConfig(true)" v-else />
+            <UButton
+                :label="$t('receiverButtonRefresh')"
+                :color="dirty ? 'primary' : 'neutral'"
+                :disabled="!dirty"
+                @click="refreshTab"
+            />
+            <UButton
+                :label="$t('receiverButtonSave')"
+                :color="dirty ? 'primary' : 'neutral'"
+                :disabled="!dirty"
+                @click="saveConfig(false)"
+                v-if="!needReboot"
+            />
+            <UButton
+                :label="$t('receiverButtonSave')"
+                :color="dirty ? 'primary' : 'neutral'"
+                :disabled="!dirty"
+                @click="saveConfig(true)"
+                v-else
+            />
         </div>
     </BaseTab>
 </template>
@@ -596,6 +613,41 @@ const rssiConfig = computed(() => fcStore.rssiConfig);
 const features = computed(() => fcStore.features);
 
 const rcDeadbandConfig = computed(() => fcStore.rcDeadbandConfig);
+
+// Dirty state tracking
+const savedSnapshot = ref("");
+
+function takeSnapshot() {
+    return JSON.stringify({
+        channelMap: channelMapString.value,
+        rxMode: selectedRxMode.value,
+        serialrxProvider: rxConfig.value?.serialrx_provider,
+        rxSpiProtocol: rxConfig.value?.rxSpiProtocol,
+        elrsModelId: rxConfig.value?.elrsModelId,
+        stickMin: rxConfig.value?.stick_min,
+        stickCenter: rxConfig.value?.stick_center,
+        stickMax: rxConfig.value?.stick_max,
+        rcSmoothing: rxConfig.value?.rcSmoothing,
+        rcSmoothingSetpointCutoff: rxConfig.value?.rcSmoothingSetpointCutoff,
+        rcSmoothingAutoFactor: rxConfig.value?.rcSmoothingAutoFactor,
+        rcSmoothingThrottleCutoff: rxConfig.value?.rcSmoothingThrottleCutoff,
+        rcSmoothingAutoFactorThrottle: rxConfig.value?.rcSmoothingAutoFactorThrottle,
+        rcSmoothingFeedforwardCutoff: rxConfig.value?.rcSmoothingFeedforwardCutoff,
+        rssiChannel: rssiConfig.value?.channel,
+        deadband: rcDeadbandConfig.value?.deadband,
+        yawDeadband: rcDeadbandConfig.value?.yaw_deadband,
+        deadband3dThrottle: rcDeadbandConfig.value?.deadband3d_throttle,
+        featureMask: features.value?.features?._featureMask,
+        elrsBindingPhrase: elrsBindingPhrase.value,
+        setpointManualMode: setpointManualMode.value,
+        throttleManualMode: throttleManualMode.value,
+        feedforwardManualMode: feedforwardManualMode.value,
+    });
+}
+
+const dirty = computed(() => {
+    return savedSnapshot.value !== "" && takeSnapshot() !== savedSnapshot.value;
+});
 
 // Decode HTML entities in translations (some use &lt; etc)
 function decodeHtmlEntities(text) {
@@ -963,6 +1015,8 @@ async function loadConfig() {
         if (savedRate?.rx_refresh_rate) {
             refreshRate.value = savedRate.rx_refresh_rate;
         }
+
+        savedSnapshot.value = takeSnapshot();
     } catch (e) {
         console.error("Failed to load Receiver configuration", e);
     }
@@ -1020,6 +1074,7 @@ async function saveConfig(withReboot = false) {
                 mspHelper.writeConfiguration(false, resolve);
             });
             gui_log(t("receiverConfigSaved") || "Configuration saved");
+            savedSnapshot.value = takeSnapshot();
         }
 
         needReboot.value = false;

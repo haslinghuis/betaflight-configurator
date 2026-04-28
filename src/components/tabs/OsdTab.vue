@@ -509,7 +509,7 @@
                 </UButton>
                 <UButton
                     @click="refreshConfig()"
-                    :disabled="!osdStore.dirty || isSaving"
+                    :disabled="isSaving || (hasLoadedConfig && !osdStore.dirty)"
                     :color="osdStore.dirty ? 'primary' : 'neutral'"
                 >
                     {{ $t("osdSetupRefresh") }}

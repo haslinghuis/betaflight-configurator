@@ -5,7 +5,7 @@
  * Inputs:
  *   --manifest <path>     JSON manifest of today's nightly artefact URLs (R2)
  *   --releases <path>     JSON file with the GitHub releases payload (output of `gh api releases`)
- *   --output <dir>        Output directory; index.html, logo.svg and favicon.png are written here
+ *   --output <dir>        Output directory; index.html and favicon.png are written here
  *   --master-url <url>    URL to the master branch web app deploy
  *   --release-url <url>   URL to the release web app (default: https://app.betaflight.com)
  *
@@ -182,6 +182,7 @@ function renderLatestStableSection(latest) {
 }
 
 const RECENT_RELEASE_YEARS = 4;
+const PRERELEASE_VISIBILITY_MONTHS = 9;
 const RELEASES_INDEX_URL = "https://github.com/betaflight/betaflight-configurator/releases";
 
 function renderReleaseHistorySection(releases) {
@@ -195,7 +196,21 @@ function renderReleaseHistorySection(releases) {
 
     const cutoff = new Date();
     cutoff.setFullYear(cutoff.getFullYear() - RECENT_RELEASE_YEARS);
-    const recent = releases.filter((r) => r.published_at && new Date(r.published_at) >= cutoff);
+    const prereleaseCutoff = new Date();
+    prereleaseCutoff.setMonth(prereleaseCutoff.getMonth() - PRERELEASE_VISIBILITY_MONTHS);
+    const recent = releases.filter((r) => {
+        if (!r.published_at) {
+            return false;
+        }
+        const published = new Date(r.published_at);
+        if (published < cutoff) {
+            return false;
+        }
+        if (r.prerelease && published < prereleaseCutoff) {
+            return false;
+        }
+        return true;
+    });
     const olderCount = releases.length - recent.length;
     const olderNote = olderCount
         ? `<p class="meta">Earlier releases are available on <a href="${RELEASES_INDEX_URL}">GitHub</a>.</p>`
@@ -282,7 +297,6 @@ try {
     writeFileSync(join(outputDir, "index.html"), html);
 
     const repoRoot = resolve(__dirname, "..");
-    copyFileSync(join(repoRoot, "src/images/dark-wide-2-compact.svg"), join(outputDir, "logo.svg"));
     copyFileSync(join(repoRoot, "src-tauri/icons/bf_icon_128.png"), join(outputDir, "favicon.png"));
 
     console.log(`Wrote ${join(outputDir, "index.html")}`);

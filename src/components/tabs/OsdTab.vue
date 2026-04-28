@@ -344,8 +344,8 @@
                             >
                                 <UInputNumber
                                     v-model="entry.alarm.value"
-                                    :min="entry.alarm.min || 0"
-                                    :max="entry.alarm.max || 9999"
+                                    :min="entry.alarm.min ?? 0"
+                                    :max="entry.alarm.max ?? 9999"
                                     :step="1"
                                     :format-options="{ useGrouping: false }"
                                     size="xs"
@@ -507,22 +507,20 @@
                 <UButton :disabled="!osdStore.state.isMax7456FontDeviceDetected" @click="openFontManager()">
                     {{ $t("osdSetupFontManagerTitle") }}
                 </UButton>
-                <UFieldGroup size="sm" orientation="horizontal" class="flex!">
-                    <UButton
-                        @click="saveConfig()"
-                        :disabled="!osdStore.dirty"
-                        :color="osdStore.dirty ? 'success' : 'neutral'"
-                    >
-                        {{ saveButtonText }}
-                    </UButton>
-                    <UDropdownMenu v-slot="{ open }" :items="saveMenuItems" :content="{ align: 'end', side: 'top' }">
-                        <UButton
-                            :color="osdStore.dirty ? 'success' : 'neutral'"
-                            :icon="open ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-                            square
-                        />
-                    </UDropdownMenu>
-                </UFieldGroup>
+                <UButton
+                    @click="refreshConfig()"
+                    :disabled="!osdStore.dirty || isSaving"
+                    :color="osdStore.dirty ? 'primary' : 'neutral'"
+                >
+                    {{ $t("osdSetupRefresh") }}
+                </UButton>
+                <UButton
+                    @click="saveConfig()"
+                    :disabled="!osdStore.dirty || isSaving"
+                    :color="osdStore.dirty ? 'primary' : 'neutral'"
+                >
+                    {{ saveButtonText }}
+                </UButton>
             </div>
         </div>
     </BaseTab>
@@ -581,22 +579,6 @@ const logoImageSizeParams = {
 };
 const saveButtonTextOverride = ref(null);
 const saveButtonText = computed(() => saveButtonTextOverride.value || i18n.getMessage("osdSetupSave"));
-const saveMenuItems = computed(() => [
-    [
-        {
-            label: i18n.getMessage("osdSetupSave"),
-            icon: "i-lucide-save",
-            disabled: !osdStore.dirty || isSaving.value,
-            onSelect: saveConfig,
-        },
-        {
-            label: i18n.getMessage("osdSetupRefresh"),
-            icon: "i-lucide-refresh-cw",
-            disabled: isSaving.value,
-            onSelect: refreshConfig,
-        },
-    ],
-]);
 const hasLoadedConfig = ref(false);
 // State for popover
 const presetMenuField = ref(null);
@@ -1200,8 +1182,9 @@ function updatePreview() {
 }
 
 // Load OSD configuration from FC
-// Load OSD configuration from FC
 async function loadConfig() {
+    hasLoadedConfig.value = false;
+
     try {
         // Fetch OSD config via Store
         await osdStore.fetchOsdConfig();
@@ -1223,10 +1206,9 @@ async function loadConfig() {
         }
 
         updatePreview();
+        hasLoadedConfig.value = true;
     } catch (error) {
         console.error("Failed to load OSD configuration:", error);
-    } finally {
-        hasLoadedConfig.value = true;
     }
 }
 
@@ -1510,6 +1492,7 @@ onMounted(async () => {
 onUnmounted(() => {
     document.removeEventListener("click", handleClickOutside);
     analyticsChanges.value = {};
+    osdStore.resetSnapshot();
 });
 </script>
 

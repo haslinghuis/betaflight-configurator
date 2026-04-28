@@ -481,20 +481,20 @@
             <UButton
                 :label="$t('receiverButtonRefresh')"
                 :color="dirty ? 'primary' : 'neutral'"
-                :disabled="!dirty"
+                :disabled="!dirty || isSaving"
                 @click="refreshTab"
             />
             <UButton
                 :label="$t('receiverButtonSave')"
                 :color="dirty ? 'primary' : 'neutral'"
-                :disabled="!dirty"
+                :disabled="!dirty || isSaving"
                 @click="saveConfig(false)"
                 v-if="!needReboot"
             />
             <UButton
                 :label="$t('receiverButtonSave')"
                 :color="dirty ? 'primary' : 'neutral'"
-                :disabled="!dirty"
+                :disabled="!dirty || isSaving"
                 @click="saveConfig(true)"
                 v-else
             />
@@ -1016,6 +1016,7 @@ async function loadConfig() {
             refreshRate.value = savedRate.rx_refresh_rate;
         }
 
+        needReboot.value = false;
         savedSnapshot.value = takeSnapshot();
     } catch (e) {
         console.error("Failed to load Receiver configuration", e);

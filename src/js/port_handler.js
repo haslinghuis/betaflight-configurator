@@ -35,6 +35,14 @@ const PortHandler = new (function () {
     this.currentUsbPorts = [];
     this.currentBluetoothPorts = [];
 
+    // The real device path we are reconnecting to after a save/reboot or MSP-CLI reconnect.
+    // A non-null value means "reconnect in progress": selectActivePort() must not hijack the
+    // selection with the expert-mode virtual/manual fallback while the rebooting device is
+    // transiently absent from the port lists. Set by serial_backend at the start of a reboot
+    // and the MSP-CLI reconnect; cleared on successful reconnect, when the reboot window
+    // closes, and on user disconnect. port_handler must NOT import serial_backend (no cycle).
+    this.pinnedReconnectTarget = null;
+
     this.portPicker = {
         selectedPort: DEFAULT_PORT,
         selectedBauds: DEFAULT_BAUDS,
@@ -285,14 +293,26 @@ PortHandler.selectActivePort = function (suggestedDevice = false) {
     }
 
     // Expert-only fallbacks: only surface virtual/manual when expert mode is on.
+    // While a reconnect is in progress (pinnedReconnectTarget set), the rebooting device is
+    // only transiently absent from the lists — it will re-enumerate and re-select itself.
+    // Do NOT assign the virtual/manual fallback in that window, or it would hijack the
+    // selection mid-reboot and leave the configurator pointed at the wrong "device".
     const expertMode = isExpertModeEnabled();
+    const reconnectInProgress = this.pinnedReconnectTarget !== null;
 
-    if (!selectedPort && expertMode && this.showVirtualMode) {
+    if (!selectedPort && !reconnectInProgress && expertMode && this.showVirtualMode) {
         selectedPort = "virtual";
     }
 
-    if (!selectedPort && expertMode && this.showManualMode) {
+    if (!selectedPort && !reconnectInProgress && expertMode && this.showManualMode) {
         selectedPort = "manual";
+    }
+
+    // While reconnecting, keep the selection pinned to the real target (rather than dropping
+    // to "noselection") so the reconnect loop keeps aiming at the rebooting device until it
+    // re-enumerates and re-selects itself. Only pin to an actual path, never to virtual/manual.
+    if (!selectedPort && reconnectInProgress && typeof this.pinnedReconnectTarget === "string") {
+        selectedPort = this.pinnedReconnectTarget;
     }
 
     // Return the default port if no other port was selected

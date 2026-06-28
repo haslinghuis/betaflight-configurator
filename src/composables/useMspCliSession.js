@@ -4,6 +4,7 @@ import MSP from "../js/msp";
 import GUI from "../js/gui";
 import FC from "../js/fc";
 import { connectDisconnect } from "../js/serial_backend";
+import PortHandler from "../js/port_handler";
 
 const DEFAULT_COMMAND_TIMEOUT_MS = 2000;
 const SAVE_COMMAND_TIMEOUT_MS = 5000;
@@ -66,8 +67,30 @@ export function readDumpAll() {
 }
 
 export function scheduleReconnect() {
+    // Capture the currently-selected real device synchronously, before the reboot/save can drop
+    // it off the port list. Pin it so selectActivePort() will not hijack the selection with the
+    // expert-mode virtual/manual fallback during the reconnect window. Only pin real paths.
+    const target = PortHandler.portPicker.selectedPort;
+    if (target && target !== "noselection" && target !== "virtual") {
+        PortHandler.pinnedReconnectTarget = target;
+    }
+
     GUI.timeout_remove(RECONNECT_TIMEOUT_NAME);
-    GUI.timeout_add(RECONNECT_TIMEOUT_NAME, () => connectDisconnect(), RECONNECT_DELAY_MS);
+    GUI.timeout_add(
+        RECONNECT_TIMEOUT_NAME,
+        () => {
+            // If selectActivePort drifted the selection while the device was transiently gone,
+            // restore it to the pinned target so we reconnect to the original device.
+            if (
+                PortHandler.pinnedReconnectTarget &&
+                PortHandler.portPicker.selectedPort !== PortHandler.pinnedReconnectTarget
+            ) {
+                PortHandler.portPicker.selectedPort = PortHandler.pinnedReconnectTarget;
+            }
+            connectDisconnect();
+        },
+        RECONNECT_DELAY_MS,
+    );
 }
 
 export function cancelScheduledReconnect() {

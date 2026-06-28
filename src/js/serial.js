@@ -8,6 +8,7 @@ import CapacitorBle from "./protocols/CapacitorBle.js";
 import CapacitorTcp from "./protocols/CapacitorTcp.js";
 import TauriSerial from "./protocols/TauriSerial.js";
 import TauriTcp from "./protocols/TauriTcp.js";
+import { LinkEvent, LINK_EVENTS } from "./protocols/LinkEvent.js";
 
 /**
  * Base Serial class that manages all protocol implementations
@@ -57,37 +58,37 @@ class Serial extends EventTarget {
      * Set up event forwarding from all protocols to the Serial class
      */
     _setupEventForwarding() {
-        const events = ["addedDevice", "removedDevice", "connect", "disconnect", "receive"];
+        const legacyEvents = ["addedDevice", "removedDevice", "connect", "disconnect", "receive"];
+        // Normalized LinkEvent contract (S6). Forwarded only for transports that
+        // opt in via `supportsLinkEvents`; others keep emitting only legacy names
+        // and consumers fall back to those until S9 removes the legacy layer.
+        const linkEvents = LINK_EVENTS;
+        // Events whose detail is a raw data chunk rather than an object — these
+        // are re-wrapped as `{ data, protocolType }`.
+        const dataEvents = new Set(["receive", LinkEvent.DATA]);
 
         for (const { name, instance } of this._protocols) {
-            if (typeof instance?.addEventListener === "function") {
-                for (const eventType of events) {
-                    instance.addEventListener(eventType, (event) => {
-                        let newDetail;
-                        if (event.type === "receive") {
-                            // For 'receive' events, we need to handle the data differently
-                            newDetail = {
-                                data: event.detail,
-                                protocolType: name,
-                            };
-                        } else {
-                            // For other events, we can use the detail directly
-                            newDetail = {
-                                ...event.detail,
-                                protocolType: name,
-                            };
-                        }
+            if (typeof instance?.addEventListener !== "function") {
+                continue;
+            }
 
-                        // Dispatch the event with the new detail
-                        this.dispatchEvent(
-                            new CustomEvent(event.type, {
-                                detail: newDetail,
-                                bubbles: event.bubbles,
-                                cancelable: event.cancelable,
-                            }),
-                        );
-                    });
-                }
+            const events = instance.supportsLinkEvents ? [...legacyEvents, ...linkEvents] : legacyEvents;
+
+            for (const eventType of events) {
+                instance.addEventListener(eventType, (event) => {
+                    const newDetail = dataEvents.has(event.type)
+                        ? { data: event.detail, protocolType: name }
+                        : { ...event.detail, protocolType: name };
+
+                    // Dispatch the event with the new detail
+                    this.dispatchEvent(
+                        new CustomEvent(event.type, {
+                            detail: newDetail,
+                            bubbles: event.bubbles,
+                            cancelable: event.cancelable,
+                        }),
+                    );
+                });
             }
         }
     }
@@ -216,6 +217,31 @@ class Serial extends EventTarget {
         } catch (error) {
             console.error(`${this.logHead} Error during force close:`, error);
         }
+    }
+
+    /**
+     * S6: capture a frozen reconnect token for the active connection, delegating
+     * to the current transport. The token is transport-resolvable later via
+     * resolveReconnectTarget() without reading the live port picker.
+     * @returns {object|null} the token, or null if no transport/connection
+     */
+    getReconnectToken() {
+        return this._protocol?.getReconnectToken?.() ?? null;
+    }
+
+    /**
+     * S6: re-resolve a previously-captured token to the current device path on
+     * its originating transport, or null if the device is no longer present.
+     * Routes by `token.transportType` so the FSM never branches per transport.
+     * @param {object} token - a token produced by getReconnectToken()
+     * @returns {string|null}
+     */
+    resolveReconnectTarget(token) {
+        if (!token) {
+            return null;
+        }
+        const targetProtocol = this._protocols.find((p) => p.name === token.transportType)?.instance;
+        return targetProtocol?.resolveReconnectTarget?.(token) ?? null;
     }
 
     /**

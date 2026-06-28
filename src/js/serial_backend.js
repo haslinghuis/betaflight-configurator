@@ -460,6 +460,10 @@ function abortConnection() {
     GUI.connected_to = false;
     GUI.connecting_to = false;
 
+    // A failed connect attempt ends any reconnect-in-progress window: clear the pin so
+    // selectActivePort() resumes normal fallback rather than staying aimed at a dead target.
+    PortHandler.pinnedReconnectTarget = null;
+
     gui_log(i18n.getMessage("serialPortOpenFail"));
 
     resetConnection();

@@ -23,7 +23,7 @@ import CryptoES from "crypto-es";
 import BuildApi from "./BuildApi";
 
 import { serial } from "./serial.js";
-import { getConnectionFsm, Event as FsmEvent } from "./connection_fsm.js";
+import { getConnectionFsm, State as ConnPhase } from "./connection_fsm.js";
 import { EventBus } from "../components/eventBus";
 import { ispConnected } from "./utils/connection";
 import { unmountVueTab } from "./vue_tab_mounter";
@@ -289,7 +289,7 @@ function beginConnect(selectedPort) {
         // S3: a connect attempt begins. IDLE -> CONNECTING; during a reboot the
         // FSM is RECONNECTING -> CONNECTING. Readiness (finishOpen/connectCli)
         // advances it to CONNECTED/CLI. (virtual dispatches its own in onOpenVirtual.)
-        getConnectionFsm().dispatch(FsmEvent.CONNECT);
+        getConnectionFsm().setPhase(ConnPhase.CONNECTING);
     }
 
     serial.connect(
@@ -472,7 +472,7 @@ function setConnectionTimeout() {
                 // S3: bounded HANDSHAKING timeout — the FC opened the link but
                 // never completed the MSP chain. HANDSHAKING -> FAILED; the
                 // disconnect below tears it down (-> onClosed -> notifyClosed -> IDLE).
-                getConnectionFsm().dispatch(FsmEvent.FAIL);
+                getConnectionFsm().setPhase(ConnPhase.FAILED);
                 connectDisconnect();
             }
         },
@@ -514,7 +514,7 @@ function abortConnection() {
     // S3: a failed handshake (invalid/garbage API version) is a HANDSHAKING ->
     // FAILED edge before teardown. notifyClosed (via resetConnection's close path)
     // settles to IDLE.
-    getConnectionFsm().dispatch(FsmEvent.FAIL);
+    getConnectionFsm().setPhase(ConnPhase.FAILED);
 
     GUI.connected_to = false;
     GUI.connecting_to = false;
@@ -568,7 +568,7 @@ function onOpen(openInfo) {
         // S3: the link is open; the MSP handshake begins now. CONNECTING ->
         // HANDSHAKING. Readiness (finishOpen/connectCli) advances to CONNECTED/CLI;
         // the bounded "connecting" timeout below dispatches FAIL on a stall.
-        getConnectionFsm().dispatch(FsmEvent.HANDSHAKE);
+        getConnectionFsm().setPhase(ConnPhase.HANDSHAKING);
 
         gui_log(i18n.getMessage("serialPortOpened", [PortHandler.portPicker.selectedPort]));
 
@@ -634,11 +634,8 @@ function onOpenVirtual() {
     GUI.connected_to = GUI.connecting_to;
     GUI.connecting_to = false;
 
-    // S3 readiness edge #3: virtual is ready immediately (no MSP chain).
-    // CONNECT then READY so the FSM reaches CONNECTED (FULLY_READY) cleanly.
-    const fsm = getConnectionFsm();
-    fsm.dispatch(FsmEvent.CONNECT);
-    fsm.dispatch(FsmEvent.READY);
+    // Readiness edge #3: virtual is ready immediately (no MSP chain) -> CONNECTED.
+    getConnectionFsm().setPhase(ConnPhase.CONNECTED);
 
     CONFIGURATOR.connectionValid = true;
     CONFIGURATOR.virtualMode = true;
@@ -842,7 +839,7 @@ function finishOpen() {
     onConnect();
 
     // S3 readiness edge #1: full MSP chain complete -> CONNECTED (FULLY_READY).
-    getConnectionFsm().dispatch(FsmEvent.READY);
+    getConnectionFsm().setPhase(ConnPhase.CONNECTED);
 
     GUI.selectDefaultTabWhenConnected();
 }
@@ -857,7 +854,7 @@ function connectCli() {
     onConnect();
 
     // S3 readiness edge #2: CLI-only / version-mismatch session -> CLI (CLI_ONLY).
-    getConnectionFsm().dispatch(FsmEvent.CLI_READY);
+    getConnectionFsm().setPhase(ConnPhase.CLI);
 
     switchTab("cli", { mode: "cli" });
 }
